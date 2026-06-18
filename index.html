@@ -203,35 +203,109 @@
         };
 
         const careerData = {
-            name: "Robotics Careers",
-            description: "The professional industry matrix mapping engineering roles to core technical skill sets and structural focus areas.",
+    name: "Robotics Careers",
+    description: "The professional industry matrix. Robotics is highly specialized; modern teams are divided into distinct algorithmic, hardware, and infrastructure sub-disciplines.",
+    children: [
+        {
+            name: "Software & Algorithms",
+            description: "The high-level brains of the robot, focusing on AI, mathematical optimization, and spatial reasoning.",
             children: [
                 {
-                    name: "Autonomy & Guidance Engineer",
-                    description: "Specializes in path optimization, high-level planning, and target tracking for mobile configurations, drones, and autonomous vehicle arrays.",
-                    math: "Core Specialization Focus: Sampling-based planning (RRT*, Informed-PRM), behavioral state machines, costmap processing, and vector field routing.",
-                    courses: [{ name: "University of Toronto: Self-Driving Cars", link: "https://www.coursera.org/specializations/self-driving-cars" }],
-                    youtube: [{ name: "Autonomous Navigation Series - MATLAB", link: "https://www.youtube.com/playlist?list=PLn8PRpmsu08rLRGrnF-S6TyGrmA8-XGb0" }],
-                    projects: [{ title: "ROS 2 Navigation Plugin Layer", lang: "C++", desc: "Write a high-performance Nav2 costmap planner plugin implementing customized kinematic trajectory evaluations." }]
+                    name: "SLAM & Localization Engineer",
+                    description: "Focuses entirely on state estimation and mapping in unknown environments without GPS.",
+                    math: "Factor Graph Optimization via MAP (Maximum A Posteriori) estimation. Solves large sparse linear systems $\\mathbf{A}\\mathbf{x} = \\mathbf{b}$ using Cholesky factorization.",
+                    courses: [{ name: "Georgia Tech: Mobile Robot Tracking & SLAM", link: "https://www.coursera.org/" }],
+                    youtube: [{ name: "GTSAM Tutorials", link: "https://gtsam.org/" }],
+                    projects: [{ title: "Custom Visual-Inertial Odometry", lang: "C++", desc: "Build a VIO pipeline from scratch using GTSAM or Ceres Solver to track a drone's trajectory from a raw camera and IMU dataset." }]
                 },
                 {
-                    name: "Robotic Perception Engineer",
-                    description: "Bridges the gap between raw data streams and runtime environments. Specializes in multi-modal sensor arrays, object detection, and tracking.",
-                    math: "Core Specialization Focus: Deep spatial object detection networks (YOLO architectures), clustering algorithms, point cloud registration, and spatial calibration.",
-                    courses: [{ name: "Carnegie Mellon MRSD Program Tracks", link: "https://mrsd.ri.cmu.edu/" }],
-                    youtube: [{ name: "OpenCV & Deep Learning - PyImageSearch", link: "https://pyimagesearch.com/" }],
-                    projects: [{ title: "Real-Time 3D Object Segmentation Stack", lang: "C++", desc: "Deploy a vision-guided perception pipeline leveraging TensorRT acceleration to isolate and estimate 6D poses from complex industrial bins." }]
+                    name: "Manipulation & Kinematics Engineer",
+                    description: "Specializes in robotic arms, grasp generation, inverse kinematics, and collision avoidance.",
+                    math: "Calculates grasp wrench spaces and manipulability ellipsoids: $\\mathbf{v}^T (\\mathbf{J}\\mathbf{J}^T)^{-1} \\mathbf{v} \\leq 1$ to find optimal grip configurations.",
+                    courses: [{ name: "Northwestern: Modern Robotics - Grasping", link: "https://modernrobotics.northwestern.edu/" }],
+                    youtube: [{ name: "MoveIt 2 Developer Streams", link: "https://www.youtube.com/@moveitrobotics" }],
+                    projects: [{ title: "Custom MoveIt 2 IK Solver Plugin", lang: "C++", desc: "Write an optimized, analytical Inverse Kinematics plugin for a specific 6-DOF industrial arm and integrate it into the ROS 2 MoveIt pipeline." }]
                 },
                 {
-                    name: "Controls Architect",
-                    description: "Focuses on sub-millisecond hardware loop stability, dynamic balancing, dynamic model generation, and robust tracking control.",
-                    math: "Core Specialization Focus: State-space control engineering, optimal estimation methods, torque-loop regulation, and analytical mechanical dynamic derivations.",
-                    courses: [{ name: "MIT 6.241: Dynamic Systems and Control", link: "https://ocw.mit.edu/courses/6-241j-dynamic-systems-and-control-spring-2011/" }],
-                    youtube: [{ name: "Steve Brunton: Control Theory Foundations", link: "https://www.youtube.com/playlist?list=PLMrJAkhIeNNR20MzibVRSupQHTwcJn76F" }],
-                    projects: [{ title: "Legged Robot Balance Optimization Controller", lang: "C++", desc: "Build a simulation running a real-time Virtual Model Control framework to stabilize multi-joint quadruped leg assemblies during terrain changes." }]
+                    name: "Perception & Vision Engineer",
+                    description: "Bridges raw sensor data (Lidar, RGB-D) and runtime semantics using classical CV and Deep Learning.",
+                    math: "Leverages deep neural networks (CNNs, Transformers) and classical techniques like RANSAC plane fitting: $\\min \\sum \\rho(e_i^2)$ for robust outlier rejection.",
+                    courses: [{ name: "Carnegie Mellon: 16-385 Computer Vision", link: "http://www.cs.cmu.edu/~16385/" }],
+                    youtube: [{ name: "Cyrill Stachniss: Photogrammetry", link: "https://www.youtube.com/c/CyrillStachniss" }],
+                    projects: [{ title: "Lidar 3D Bounding Box Tracking", lang: "Python", desc: "Train a PointPillars network to detect vehicles in KITTI point cloud data, applying a Hungarian matching algorithm for frame-to-frame tracking." }]
+                },
+                {
+                    name: "Autonomy & Path Planning Engineer",
+                    description: "Generates optimal, collision-free trajectories from point A to point B.",
+                    math: "Implements heuristic graph search algorithms (A*, D*) and optimal sampling-based planners like RRT* ensuring asymptotic optimality as samples $N \\to \\infty$.",
+                    courses: [{ name: "UPenn: Computational Motion Planning", link: "https://www.coursera.org/learn/robotics-motion-planning" }],
+                    youtube: [{ name: "MATLAB: Autonomous Navigation Series", link: "https://www.youtube.com/playlist?list=PLn8PRpmsu08rLRGrnF-S6TyGrmA8-XGb0" }],
+                    projects: [{ title: "Frenet Frame Trajectory Optimizer", lang: "C++", desc: "Generate smooth polynomial splines in the Frenet-Serret frame $(s, d)$ for high-speed highway lane changing in a self-driving car simulator." }]
+                },
+                {
+                    name: "Machine Learning (RL) Engineer",
+                    description: "Trains policies for complex behaviors (like bipedal walking) that are too mathematically complex to derive analytically.",
+                    math: "Optimizes the expected return in a Markov Decision Process (MDP) using algorithms like Proximal Policy Optimization (PPO): $\\max_\\theta \\mathbb{E}[ \\min(r_t(\\theta)\\hat{A}_t, \\text{clip}(r_t(\\theta), 1-\\epsilon, 1+\\epsilon)\\hat{A}_t) ]$.",
+                    courses: [{ name: "UC Berkeley CS285: Deep Reinforcement Learning", link: "http://rail.eecs.berkeley.edu/deeprlcourse/" }],
+                    youtube: [{ name: "Hugging Face Deep RL Course", link: "https://www.youtube.com/watch?v=q0BigVcCOvM" }],
+                    projects: [{ title: "Isaac Gym Quadruped Walker", lang: "Python", desc: "Use NVIDIA Isaac Gym to train a simulated quadruped robot to walk over uneven terrain using PPO and massive domain randomization." }]
                 }
             ]
-        };
+        },
+        {
+            name: "Embedded & Infrastructure",
+            description: "The critical layers that connect high-level algorithms to the physical metal, ensuring low latency and reliability.",
+            children: [
+                {
+                    name: "Robotics Middleware Engineer",
+                    description: "Builds the internal communication networks (like ROS 2) that allow different software nodes to talk efficiently.",
+                    math: "Focuses on computer science fundamentals: lock-free queues, zero-copy shared memory algorithms, and minimizing Big-O time complexity for IPC (Inter-Process Communication).",
+                    courses: [{ name: "Udacity: C++ Nanodegree", link: "https://www.udacity.com/course/c-plus-plus-nanodegree--nd213" }],
+                    youtube: [{ name: "CppCon Robotics Talks", link: "https://www.youtube.com/user/CppCon" }],
+                    projects: [{ title: "Zero-Copy ROS 2 Image Pipeline", lang: "C++", desc: "Implement a high-frequency camera driver using ROS 2 loaned messages to bypass memory copying between perception and encoding nodes." }]
+                },
+                {
+                    name: "Embedded Firmware Engineer",
+                    description: "Writes the bare-metal C/C++ code that runs on microcontrollers to spin motors and read sensors.",
+                    math: "Utilizes discrete Z-transform control theory $C(z)$ and handles bitwise hardware register configurations to manage Direct Memory Access (DMA) and hardware interrupts.",
+                    courses: [{ name: "UT Austin: Embedded Systems", link: "https://www.edx.org/course/embedded-systems-shape-the-world-microcontroller-i" }],
+                    youtube: [{ name: "Phil's Lab: STM32 & PCB Design", link: "https://www.youtube.com/c/PhilS94" }],
+                    projects: [{ title: "Custom BLDC Motor Controller", lang: "C", desc: "Write firmware for an STM32 microcontroller to execute Field Oriented Control (FOC) for a brushless DC motor, commutating based on encoder feedback." }]
+                },
+                {
+                    name: "Simulation & Tooling Engineer",
+                    description: "Creates photorealistic, physics-accurate virtual environments (digital twins) for software teams to test code safely.",
+                    math: "Solves rigid body contact constraints using Linear Complementarity Problems (LCP). Focuses heavily on 3D geometry and rendering pipelines.",
+                    courses: [{ name: "NVIDIA Deep Learning Institute: Isaac Sim", link: "https://courses.nvidia.com/" }],
+                    youtube: [{ name: "Gazebo Simulator Tutorials", link: "https://gazebosim.org/tutorials" }],
+                    projects: [{ title: "Custom Sensor Plugin for Gazebo", lang: "C++", desc: "Develop a custom Gazebo physics plugin that simulates the noise profile and multipath errors of a specific industrial Radar sensor." }]
+                }
+            ]
+        },
+        {
+            name: "Hardware & Operations",
+            description: "Designing the physical robot, integrating it, and managing thousands of them in the real world.",
+            children: [
+                {
+                    name: "Mechatronics / Systems Engineer",
+                    description: "The 'glue' engineer who understands mechanical loads, electrical limits, and software constraints to make them work together.",
+                    math: "Applies multi-physics modeling (e.g., in MATLAB/Simulink) connecting electrical power $P = IV$ with mechanical torque $\\tau = I\\alpha$ to size actuators.",
+                    courses: [{ name: "MIT 2.74: Bio-inspired Robotics", link: "https://ocw.mit.edu/courses/2-74-bio-inspired-robotics-fall-2014/" }],
+                    youtube: [{ name: "James Bruton: DIY Mechatronics", link: "https://www.youtube.com/user/jamesbruton" }],
+                    projects: [{ title: "Self-Balancing Reaction Wheel Inverted Pendulum", lang: "C++ / Hardware", desc: "Design a 3D printed pendulum, select an appropriate motor/flywheel combo, and tune an LQR controller to keep it balanced." }]
+                },
+                {
+                    name: "Fleet & Cloud Robotics Engineer",
+                    description: "Manages the deployment, monitoring, and telemetry data of hundreds of robots deployed in warehouses or cities.",
+                    math: "Focuses on network topologies, REST/gRPC API latencies, and distributed database sharding strategies to handle massive influxes of IoT telemetry.",
+                    courses: [{ name: "AWS IoT Core Training", link: "https://aws.amazon.com/iot-core/" }],
+                    youtube: [{ name: "Foxglove Studio Data Visualization", link: "https://www.youtube.com/@foxglovedev" }],
+                    projects: [{ title: "WebRTC Remote Robot Teleoperation", lang: "TypeScript / Python", desc: "Build a secure web dashboard using React and WebRTC to stream low-latency video and send joystick commands to a remote ROS 2 robot." }]
+                }
+            ]
+        }
+    ]
+};
 
         let currentMode = 'technical';
         let rootNode = null;

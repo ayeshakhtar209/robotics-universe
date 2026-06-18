@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robotics Engineering Matrix | Interactive Knowledge Map</title>
+    <!-- Tailwind CSS for modern layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- D3.js for visual graph construction -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- MathJax for rendering equations -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .node circle {
+            fill: #1e293b;
+            stroke: #38bdf8;
+            stroke-width: 2px;
+            transition: all 0.2s ease;
+        }
+        .node--internal circle {
+            fill: #0f172a;
+        }
+        .node:hover circle {
+            fill: #38bdf8;
+            cursor: pointer;
+            filter: drop-shadow(0 0 8px #38bdf8);
+        }
+        .link {
+            fill: none;
+            stroke: #334155;
+            stroke-width: 1.5px;
+            stroke-dasharray: 4,4;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -1000; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+
+    <!-- Global Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-50">
+        <div>
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent">ROBOTICS KNOWLEDGE MATRIX</h1>
+            <p class="text-xs text-slate-400">An interactive map of the robotics engineering landscape inspired by VisCircuit.</p>
+        </div>
+        
+        <!-- View Controller Toggles -->
+        <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button id="btn-technical" onclick="switchView('technical')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20">
+                Technical Mastery Tree
+            </button>
+            <button id="btn-career" onclick="switchView('career')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200">
+                Career Trajectory Map
+            </button>
+        </div>
+    </header>
+
+    <!-- Core Interactive Workspace -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
+        
+        <!-- Visual Canvas Viewport -->
+        <section class="lg:col-span-7 xl:col-span-8 bg-slate-950 relative border-b lg:border-b-0 lg:border-r border-slate-800 h-[50vh] lg:h-[calc(100vh-73px)]">
+            <div class="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800 text-[10px] text-slate-400 pointer-events-none">
+                Left-Click Node: Expand/Collapse & View Details | Scroll: Zoom | Drag: Pan Workspace
+            </div>
+            <div id="canvas-container" class="w-full h-full"></div>
+        </section>
+
+        <!-- Information & Curriculum Panel -->
+        <section id="detail-panel" class="lg:col-span-5 xl:col-span-4 bg-slate-900/30 overflow-y-auto h-[50vh] lg:h-[calc(100vh-73px)] p-6 lg:p-8 space-y-6">
+            <!-- Dynamic Injection Area via JS -->
+            <div id="panel-content-default" class="h-full flex flex-col justify-center items-center text-center text-slate-500 space-y-3">
+                <svg class="w-12 h-12 text-slate-700 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                <p class="text-sm font-medium">Select any node on the interactive map to inspect core mathematical foundations, university curriculums, and portfolio projects.</p>
+            </div>
+            <div id="panel-content-active" class="hidden space-y-6">
+                <!-- Data populated dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Data Tree Storage Objects -->
+    <script>
+        const technicalData = {
+            name: "Robotics Core",
+            description: "The fundamental interdisciplinary matrix comprising math, software infrastructure, physics engines, and optimization loops.",
+            children: [
+                {
+                    name: "Kinematics & Dynamics",
+                    description: "The structural physics of motion and forces. Governs how robotic topologies map from internal states to physical coordinates.",
+                    children: [
+                        {
+                            name: "Spatial Transformations",
+                            description: "Representing frame translation and spatial alignment across varied coordinate frames seamlessly.",
+                            math: "Translation Vector $\\mathbf{t} \\in \\mathbb{R}^3$, Rotation Matrix $\\mathbf{R} \\in SO(3)$. Homogeneous Transformation Matrix:<br>$$\\mathbf{T} = \\begin{bmatrix} \\mathbf{R} & \\mathbf{t} \\\\ 0_{1\\times3} & 1 \\end{bmatrix} \\in SE(3)$$$$\\mathbf{q} = w + xi + yj + zk \\quad \\text{(Quaternions bypass Gimbal Lock)}$$",
+                            courses: [{ name: "Stanford EE263: Linear Dynamical Systems", link: "https://see.stanford.edu/Course/EE263" }],
+                            youtube: [{ name: "Spatial Math & Rotations - Ben Axelrod", link: "https://www.youtube.com/results?search_query=spatial+transformations+robotics" }],
+                            projects: [{ title: "3D Transformation Engine", lang: "C++", desc: "Construct a clean, raw math library from scratch executing Matrix/Quaternion conversions and compounding frames without external dependencies." }]
+                        },
+                        {
+                            name: "Forward & Inverse Kinematics",
+                            description: "Mapping configurations between internal joint space arrays and operational task space coordinates.",
+                            math: "Forward Kinematics utilizes Denavit-Hartenberg (DH) parameter sequencing:<br>$$\\mathbf{T}_i^{i-1} = \\mathbf{R}_z(\\theta_i)\\mathbf{T}_z(d_i)\\mathbf{T}_x(a_i)\\mathbf{R}_x(\\alpha_i)$$Inverse Kinematics (IK) solves numerical optimizations via Jacobian Pseudoinverse: $\\Delta \\mathbf{q} = \\mathbf{J}^{\\dagger} \\Delta \\mathbf{x}$.",
+                            courses: [{ name: "MIT 2.12: Introduction to Robotics", link: "https://ocw.mit.edu/courses/2-12-introduction-to-robotics-fall-2005/" }],
+                            youtube: [{ name: "Modern Robotics Course Track - Kevin Lynch", link: "https://www.youtube.com/c/ModernRobotics" }],
+                            projects: [{ title: "Analytical/Numerical 6-DOF IK Solver", lang: "Python", desc: "Implement a full geometric decoupling IK solver alongside a Newton-Raphson numerical algorithm tracking 3D trajectories." }]
+                        },
+                        {
+                            name: "Jacobians & Singularities",
+                            description: "Differential kinematics mapping vector spaces from joint rates directly into operational space velocities.",
+                            math: "Linear/Angular Velocity Mapping: $\\mathbf{v} = \\mathbf{J}(\\mathbf{q})\\dot{\\mathbf{q}}$.<br>Kinematic Singularities occur precisely when spatial velocity configurations fail rank metrics:<br>$$\\det(\\mathbf{J}(\\mathbf{q})) = 0$$At a singularity, structural mobility is lost, driving structural joint velocities towards infinity.",
+                            courses: [{ name: "Columbia CS4733: Computational Robotics", link: "https://www.cs.columbia.edu/~allen/F22/index.html" }],
+                            youtube: [{ name: "Robot Jacobians Explained - Angela Sodemann", link: "https://www.youtube.com/results?search_query=Angela+Sodemann+Jacobian" }],
+                            projects: [{ title: "Manipulator Singularity Detector", lang: "C++", desc: "Develop an offline verification node assessing the Manipulability Index $\\sqrt{\\det(\\mathbf{J}\\mathbf{J}^T)}$ for a standard serial industrial arm." }]
+                        },
+                        {
+                            name: "Rigid Body Dynamics",
+                            description: "Formulating physical relationships mapping joint tracking accelerations directly to physical actuator torque loads.",
+                            math: "Equation of Motion (Euler-Lagrange Formuation):<br>$$\\boldsymbol{\\tau} = \\mathbf{M}(\\mathbf{q})\\ddot{\\mathbf{q}} + \\mathbf{C}(\\mathbf{q}, \\dot{\\mathbf{q}})\\dot{\\mathbf{q}} + \\mathbf{g}(\\mathbf{q})$$Where $\\mathbf{M}$ matches mass matrices, $\\mathbf{C}$ tracks Coriolis terms, and $\\mathbf{g}$ handles gravity profiles.",
+                            courses: [{ name: "Stanford CS223A: Introduction to Robotics", link: "https://robotics.stanford.edu/" }],
+                            youtube: [{ name: "Underactuated Robotics - Russ Tedrake", link: "https://www.youtube.com/playlist?list=PLkx8KyIQkSIY5X8s-b2Y_ZskwX8Exv96D" }],
+                            projects: [{ title: "Recursive Newton-Euler Dynamics Engine", lang: "C++", desc: "Write an efficient forward/inverse dynamics simulator evaluating joint torque constraints across complex open-chain multi-body systems." }]
+                        }
+                    ]
+                },
+                {
+                    name: "Control Loops",
+                    description: "Active mathematical execution loops tracking state vectors and resolving operational error deviations dynamically.",
+                    children: [
+                        {
+                            name: "PID Regulation",
+                            description: "Classical error attenuation loops leveraging proportional, integral, and derivative corrections.",
+                            math: "$$\\mathbf{u}(t) = K_p \\mathbf{e}(t) + K_i \\int_0^t \\mathbf{e}(\\tau)d\\tau + K_d \\frac{d\\mathbf{e}(t)}{dt}$$Includes Anti-Windup saturation routines to manage integral term accumulation limits.",
+                            courses: [{ name: "UPenn MEAM 513: Control Systems", link: "https://www.meam.upenn.edu/" }],
+                            youtube: [{ name: "Control Systems Lectures - Brian Douglas", link: "https://www.youtube.com/user/ControlLectures" }],
+                            projects: [{ title: "Saturating PID Controller Vector", lang: "C++", desc: "Build a thread-safe, high-frequency discrete PID loop utilizing integral anti-windup algorithms for closed-loop motor velocity control." }]
+                        },
+                        {
+                            name: "Model Predictive Control",
+                            description: "Advanced optimal control computing predictive action sequences through discrete constraint windows.",
+                            math: "Find optimal inputs over control horizon $N$ by minimizing:<br>$$\\min_{\\mathbf{u}} \\sum_{k=0}^{N-1} (\\mathbf{x}_k^T\\mathbf{Q}\\mathbf{x}_k + \\mathbf{u}_k^T\\mathbf{R}\\mathbf{u}_k) \\quad \\text{s.t.} \\quad \\mathbf{x}_{k+1} = \\mathbf{A}\\mathbf{x}_k + \\mathbf{B}\\mathbf{u}_k$$",
+                            courses: [{ name: "UC Berkeley EE291D: Control/Optimization", link: "https://www.berkeley.edu/" }],
+                            youtube: [{ name: "MPC Design Walkthroughs - Steve Brunton", link: "https://www.youtube.com/c/Eigensteve" }],
+                            projects: [{ title: "MPC Autonomous Trajectory Optimizer", lang: "Python", desc: "Develop an MPC script optimizing steering inputs for a kinematic bicycle tracking waypoints around obstacle boundaries." }]
+                        }
+                    ]
+                },
+                {
+                    name: "Perception & Vision",
+                    description: "Processing spatial configurations, structural sensor clouds, and streaming image metrics into semantic situational spatial state representations.",
+                    children: [
+                        {
+                            name: "State Estimation & Fusion",
+                            description: "Fusing asynchronous telemetry from IMUs, wheel encoders, and GPS receivers to isolate accurate positioning data.",
+                            math: "Extended Kalman Filter (EKF) State Prediction Step:<br>$$\\hat{\\mathbf{x}}_{k|k-1} = f(\\hat{\\mathbf{x}}_{k-1|k-1}, \\mathbf{u}_k)$$Linearized Measurement Update Matrix Tracking Model Errors:<br>$$\\mathbf{H}_k = \\left. \\frac{\\partial h}{\\partial \\mathbf{x}} \\right|_{\\hat{\\mathbf{x}}_{k|k-1}}$$",
+                            courses: [{ name: "UMich ROB 501: Math for Robotics", link: "https://robotics.umich.edu/" }],
+                            youtube: [{ name: "Kalman Filter Intuition - Cyrill Stachniss", link: "https://www.youtube.com/c/CyrillStachniss" }],
+                            projects: [{ title: "Sensor Fusion EKF Architecture", lang: "C++", desc: "Construct an asynchronous sensor fusion stack integrating IMU updates and wheel odometry strings to accurately trace chassis coordinates." }]
+                        },
+                        {
+                            name: "Computer Vision & Point Clouds",
+                            description: "Filtering, segmenting, and extracting geometry from structural 3D data streams and camera arrays.",
+                            math: "Point Cloud Normal Extraction via local Covariance Matrix Optimization:<br>$$\\mathbf{C} = \\frac{1}{k}\\sum_{i=1}^k (\\mathbf{p}_i - \\overline{\\mathbf{p}})(\\mathbf{p}_i - \\overline{\\mathbf{p}})^T$$Employs topological depth profiles for target isolation in challenging, textureless pick-and-place sorting arrays.",
+                            courses: [{ name: "Stanford CS231n: CNNs for Visual Recognition", link: "http://cs231n.stanford.edu/" }],
+                            youtube: [{ name: "Open3D / PCL Tutorial Tracks", link: "https://www.youtube.com/results?search_query=open3d+point+cloud+processing" }],
+                            projects: [{ title: "Topological Bin-Picking Segmentation Pipeline", lang: "Python", desc: "Build a structured pipeline using Open3D/OpenCV to ingest depth maps, run RANSAC geometric segmentation, and extract valid 6D pick poses for unpatterned parts." }]
+                        },
+                        {
+                            name: "SLAM Algorithms",
+                            description: "Simultaneously constructing spatial environmental maps while estimating real-time localized paths.",
+                            math: "Factor Graph optimization formulations minimizing overall structural measurement residuals:<br>$$\\min_{\\mathcal{X}} \\sum_{i} \\|f(\\mathbf{x}_i, \\mathbf{u}_i) - \\mathbf{x}_{i+1}\\|_{\\boldsymbol{\\Sigma}_i}^2 + \\sum_{j} \\|h(\\mathbf{x}_{i_j}, \\mathbf{l}_j) - \\mathbf{z}_j\\|_{\\boldsymbol{\\Lambda}_j}^2$$",
+                            courses: [{ name: "University of Bonn: Photogrammetry & SLAM", link: "https://www.ipb.uni-bonn.de/lessons/" }],
+                            youtube: [{ name: "SLAM Course Lectures - Cyrill Stachniss", link: "https://www.youtube.com/playlist?list=PLgnQpQtFTOGQrZ4O5AWAEIypda0BC67v1" }],
+                            projects: [{ title: "Graph-SLAM Landmark Optimizer", lang: "Python", desc: "Write a 2D pose-graph optimization program using g2o or a custom Gauss-Newton solver to successfully close loop constraints." }]
+                        }
+                    ]
+                },
+                {
+                    name: "Software & Simulation",
+                    description: "Operational middleware layers, asynchronous message frameworks, and virtual rigid-body simulation validation platforms.",
+                    children: [
+                        {
+                            name: "ROS 2 Architecture",
+                            description: "Production-grade framework for modern robotics, utilizing DDS middleware architectures for reliable distributed routing.",
+                            math: "Deterministic execution managed through rclcpp executor abstractions. Structured communication relies on pub/sub topics, services (request/reply), and stateful action servers.",
+                            courses: [{ name: "ETH Zurich: ROS Course", link: "https://rsl.ethz.edu/education-courses/lectures/ros.html" }],
+                            youtube: [{ name: "Articulated Robotics - ROS 2 Guides", link: "https://www.youtube.com/c/ArticulatedRobotics" }],
+                            projects: [{ title: "Custom URDF Mobile Robot Controller", lang: "C++", desc: "Design a complete URDF/Xacro configuration for a mobile manipulator. Implement multi-threaded lifecycle nodes to handle path instructions and telemetry parsing." }]
+                        },
+                        {
+                            name: "Physics Simulations",
+                            description: "Virtual evaluation environments utilizing analytical physics engines to test hardware control stacks safely ahead of real-world deployments.",
+                            math: "Solves rigid body friction constraints via Projected Gauss-Seidel LCP methods. Combines photorealistic ray-tracing with massive GPU parallelization to bridge the Sim-to-Real gap.",
+                            courses: [{ name: "NVIDIA Isaac Sim Training Track", link: "https://developer.nvidia.com/isaac-sim" }],
+                            youtube: [{ name: "Open Source Robotics Foundation: Gazebo Tracks", link: "https://www.youtube.com/c/OSRForg" }],
+                            projects: [{ title: "Isaac Sim Reinforcement Learning Environment", lang: "Python", desc: "Construct an NVIDIA Isaac Sim workspace featuring a parametric robot configuration. Use domain randomization techniques to optimize robust object-grasping controls." }]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const careerData = {
+            name: "Robotics Careers",
+            description: "The professional industry matrix mapping engineering roles to core technical skill sets and structural focus areas.",
+            children: [
+                {
+                    name: "Autonomy & Guidance Engineer",
+                    description: "Specializes in path optimization, high-level planning, and target tracking for mobile configurations, drones, and autonomous vehicle arrays.",
+                    math: "Core Specialization Focus: Sampling-based planning (RRT*, Informed-PRM), behavioral state machines, costmap processing, and vector field routing.",
+                    courses: [{ name: "University of Toronto: Self-Driving Cars", link: "https://www.coursera.org/specializations/self-driving-cars" }],
+                    youtube: [{ name: "Autonomous Navigation Series - MATLAB", link: "https://www.youtube.com/playlist?list=PLn8PRpmsu08rLRGrnF-S6TyGrmA8-XGb0" }],
+                    projects: [{ title: "ROS 2 Navigation Plugin Layer", lang: "C++", desc: "Write a high-performance Nav2 costmap planner plugin implementing customized kinematic trajectory evaluations." }]
+                },
+                {
+                    name: "Robotic Perception Engineer",
+                    description: "Bridges the gap between raw data streams and runtime environments. Specializes in multi-modal sensor arrays, object detection, and tracking.",
+                    math: "Core Specialization Focus: Deep spatial object detection networks (YOLO architectures), clustering algorithms, point cloud registration, and spatial calibration.",
+                    courses: [{ name: "Carnegie Mellon MRSD Program Tracks", link: "https://mrsd.ri.cmu.edu/" }],
+                    youtube: [{ name: "OpenCV & Deep Learning - PyImageSearch", link: "https://pyimagesearch.com/" }],
+                    projects: [{ title: "Real-Time 3D Object Segmentation Stack", lang: "C++", desc: "Deploy a vision-guided perception pipeline leveraging TensorRT acceleration to isolate and estimate 6D poses from complex industrial bins." }]
+                },
+                {
+                    name: "Controls Architect",
+                    description: "Focuses on sub-millisecond hardware loop stability, dynamic balancing, dynamic model generation, and robust tracking control.",
+                    math: "Core Specialization Focus: State-space control engineering, optimal estimation methods, torque-loop regulation, and analytical mechanical dynamic derivations.",
+                    courses: [{ name: "MIT 6.241: Dynamic Systems and Control", link: "https://ocw.mit.edu/courses/6-241j-dynamic-systems-and-control-spring-2011/" }],
+                    youtube: [{ name: "Steve Brunton: Control Theory Foundations", link: "https://www.youtube.com/playlist?list=PLMrJAkhIeNNR20MzibVRSupQHTwcJn76F" }],
+                    projects: [{ title: "Legged Robot Balance Optimization Controller", lang: "C++", desc: "Build a simulation running a real-time Virtual Model Control framework to stabilize multi-joint quadruped leg assemblies during terrain changes." }]
+                }
+            ]
+        };
+
+        let currentMode = 'technical';
+        let rootNode = null;
+        let svg = null;
+        let gLink = null;
+        let gNode = null;
+        let treeLayout = null;
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            initD3Structure();
+            renderMatrixView(technicalData);
+        });
+
+        function switchView(mode) {
+            currentMode = mode;
+            const btnTech = document.getElementById('btn-technical');
+            const btnCareer = document.getElementById('btn-career');
+            
+            if(mode === 'technical') {
+                btnTech.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20";
+                btnCareer.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200";
+                renderMatrixView(technicalData);
+            } else {
+                btnCareer.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20";
+                btnTech.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200";
+                renderMatrixView(careerData);
+            }
+            
+            // Clear Panel Content
+            document.getElementById('panel-content-active').classList.add('hidden');
+            document.getElementById('panel-content-default').classList.remove('hidden');
+        }
+
+        function initD3Structure() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            svg = d3.select("#canvas-container")
+                .append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .style("background-color", "#020617")
+                .call(d3.zoom().on("zoom", (event) => {
+                    gWorkspace.attr("transform", event.transform);
+                }))
+                .append("g");
+
+            // Base background grid effect
+            svg.append("defs").append("pattern")
+                .attr("id", "grid")
+                .attr("width", 40)
+                .attr("height", 40)
+                .attr("patternUnits", "userSpaceOnUse")
+                .append("path")
+                .attr("d", "M 40 0 L 0 0 0 40")
+                .attr("fill", "none")
+                .attr("stroke", "#0f172a")
+                .attr("stroke-width", 1);
+            
+            svg.append("rect")
+                .attr("width", "3000")
+                .attr("height", "3000")
+                .attr("x", "-1500")
+                .attr("y", "-1500")
+                .attr("fill", "url(#grid)")
+                .lower();
+
+            const gWorkspace = svg.append("g");
+            gLink = gWorkspace.append("g").attr("class", "links-layer");
+            gNode = gWorkspace.append("g").attr("class", "nodes-layer");
+
+            // Configure layout dimensions
+            treeLayout = d3.tree()
+                .size([height - 100, width - 260])
+                .separation((a, b) => (a.parent == b.parent ? 1.2 : 2.0));
+        }
+
+        function renderMatrixView(sourceData) {
+            rootNode = d3.hierarchy(sourceData, d => d.children);
+            rootNode.x0 = document.getElementById('canvas-container').clientHeight / 2;
+            rootNode.y0 = 0;
+
+            // Collapse sub-levels initially to keep the visual clean
+            if(rootNode.children) {
+                rootNode.children.forEach(collapseSubNodes);
+            }
+
+            updateGraphLayout(rootNode);
+        }
+
+        function collapseSubNodes(d) {
+            if (d.children) {
+                d._children = d.children;
+                d._children.forEach(collapseSubNodes);
+                d.children = null;
+            }
+        }
+
+        function updateGraphLayout(source) {
+            const treeData = treeLayout(rootNode);
+            const nodes = treeData.descendants();
+            const links = treeData.links();
+
+            // Project horizontal coordinate depth scaling
+            nodes.forEach(d => { d.y = d.depth * 220; });
+
+            // --- Links Pipeline ---
+            const linkSelection = gLink.selectAll("path.link")
+                .data(links, d => d.target.id || (d.target.id = Math.random().toString(36).substr(2, 9)));
+
+            const linkEnter = linkSelection.enter().append("path")
+                .attr("class", "link")
+                .attr("d", d => {
+                    const o = { x: source.x0, y: source.y0 };
+                    return diagonalPath(o, o);
+                });
+
+            const linkUpdate = linkEnter.merge(linkSelection);
+            linkUpdate.transition().duration(400)
+                .attr("d", d => diagonalPath(d.source, d.target))
+                .style("stroke", currentMode === 'technical' ? '#0284c7' : '#059669');
+
+            linkSelection.exit().transition().duration(400)
+                .attr("d", d => {
+                    const o = { x: source.x, y: source.y };
+                    return diagonalPath(o, o);
+                }).remove();
+
+            // --- Nodes Pipeline ---
+            const nodeSelection = gNode.selectAll("g.node")
+                .data(nodes, d => d.id || (d.id = Math.random().toString(36).substr(2, 9)));
+
+            const nodeEnter = nodeSelection.enter().append("g")
+                .attr("class", d => `node ${d.children || d._children ? 'node--internal' : 'node--leaf'}`)
+                .attr("transform", d => `translate(${source.y0},${source.x0})`)
+                .on("click", (event, d) => {
+                    handleNodeInteraction(event, d);
+                });
+
+            nodeEnter.append("circle")
+                .attr("r", 6)
+                .style("stroke", currentMode === 'technical' ? '#38bdf8' : '#34d399');
+
+            nodeEnter.append("text")
+                .attr("dy", ".31em")
+                .attr("x", d => d.children || d._children ? -12 : 12)
+                .attr("text-anchor", d => d.children || d._children ? "end" : "start")
+                .text(d => d.data.name)
+                .attr("class", "text-[11px] font-medium tracking-wide fill-slate-300 font-sans")
+                .style("text-shadow", "0 2px 4px rgba(0,0,0,0.8)");
+
+            const nodeUpdate = nodeEnter.merge(nodeSelection);
+            
+            nodeUpdate.transition().duration(400)
+                .attr("transform", d => `translate(${d.y + 20},${d.x + 30})`);
+
+            nodeUpdate.select("circle")
+                .style("fill", d => d._children ? (currentMode === 'technical' ? '#0369a1' : '#047857') : '#0f172a');
+
+            const nodeExit = nodeSelection.exit().transition().duration(400)
+                .attr("transform", d => `translate(${source.y},${source.x})`)
+                .remove();
+
+            // Store spatial memory references for transitions
+            nodes.forEach(d => {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
+
+        function diagonalPath(s, d) {
+            return `M ${s.y + 20} ${s.x + 30}
+                    C ${(s.y + d.y) / 2 + 20} ${s.x + 30},
+                      ${(s.y + d.y) / 2 + 20} ${d.x + 30},
+                      ${d.y + 20} ${d.x + 30}`;
+        }
+
+        // Handle expansion transitions and detail injections
+        function handleNodeInteraction(event, d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else if (d._children) {
+                d.children = d._children;
+                d._children = null;
+            }
+            updateGraphLayout(d);
+            populateDetailPanel(d.data);
+        }
+
+        function populateDetailPanel(data) {
+            const defaultPanel = document.getElementById('panel-content-default');
+            const activePanel = document.getElementById('panel-content-active');
+            
+            defaultPanel.classList.add('hidden');
+            activePanel.classList.remove('hidden');
+
+            const accentColor = currentMode === 'technical' ? 'text-sky-400' : 'text-emerald-400';
+            const borderAccent = currentMode === 'technical' ? 'border-sky-500/20 bg-sky-950/20' : 'border-emerald-500/20 bg-emerald-950/20';
+
+            let rawHtml = `
+                <div>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500">${currentMode} Module Reference</span>
+                    <h2 class="text-2xl font-black ${accentColor} mt-1 tracking-tight">${data.name}</h2>
+                    <p class="text-sm text-slate-300 mt-2 leading-relaxed font-normal">${data.description}</p>
+                </div>
+            `;
+
+            if (data.math) {
+                rawHtml += `
+                    <div class="border ${borderAccent} p-4 rounded-xl space-y-2">
+                        <h4 class="text-xs uppercase font-bold tracking-wider text-slate-400">Core Engineering Foundations</h4>
+                        <div class="text-sm text-slate-200 overflow-x-auto py-1">${data.math}</div>
+                    </div>
+                `;
+            }
+
+            if (data.courses || data.youtube) {
+                rawHtml += `<div class="space-y-3">
+                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400">Curated Educational Resources</h3>`;
+                
+                if (data.courses) {
+                    data.courses.forEach(c => {
+                        rawHtml += `
+                            <a href="${c.link}" target="_blank" class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+                                    <span class="text-xs font-semibold text-slate-300 group-hover:text-slate-100">${c.name}</span>
+                                </div>
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded uppercase font-mono tracking-wider">University</span>
+                            </a>
+                        `;
+                    });
+                }
+                if (data.youtube) {
+                    data.youtube.forEach(y => {
+                        rawHtml += `
+                            <a href="${y.link}" target="_blank" class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                    <span class="text-xs font-semibold text-slate-300 group-hover:text-slate-100">${y.name}</span>
+                                </div>
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded uppercase font-mono tracking-wider">YouTube</span>
+                            </a>
+                        `;
+                    });
+                }
+                rawHtml += `</div>`;
+            }
+
+            if (data.projects) {
+                rawHtml += `<div class="space-y-3">
+                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400">Portfolio Building Project Blueprints</h3>`;
+                data.projects.forEach(p => {
+                    const tagColor = p.lang === 'C++' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+                    rawHtml += `
+                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-xs font-bold text-slate-200">${p.title}</h4>
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 border rounded ${tagColor}">${p.lang}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">${p.desc}</p>
+                        </div>
+                    `;
+                });
+                rawHtml += `</div>`;
+            }
+
+            activePanel.innerHTML = rawHtml;
+
+            // Trigger MathJax re-render to format new equations
+            if (window.MathJax) {
+                MathJax.typesetPromise([activePanel]);
+            }
+        }
+    </script>
+</body>
+</html>

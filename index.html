@@ -27,7 +27,7 @@
         canvas { touch-action: none; } /* Prevent scrolling while drawing on canvas */
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white overflow-hidden">
+<body class="bg-slate-950 text-slate-100 h-screen w-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white overflow-hidden">
 
     <!-- Global Header -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 z-50 shrink-0">
@@ -42,11 +42,11 @@
     </header>
 
     <!-- Core Interactive Workspace -->
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+    <main class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden relative">
         
         <!-- Left: D3 Map Viewport -->
-        <section class="w-full lg:w-[55%] xl:w-[60%] bg-slate-950 relative border-b lg:border-b-0 lg:border-r border-slate-800 h-[40vh] lg:h-full">
-            <div class="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800 text-[10px] text-slate-400 pointer-events-none">
+        <section class="w-full lg:w-[55%] xl:w-[60%] bg-slate-950 relative border-b lg:border-b-0 lg:border-r border-slate-800 h-[40vh] lg:h-full overflow-hidden">
+            <div class="absolute bottom-4 left-4 z-10 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800 text-[10px] text-slate-400 pointer-events-none">
                 Click Node to Explore | Scroll to Zoom | Drag to Pan
             </div>
             <div id="canvas-container" class="w-full h-full"></div>
@@ -188,7 +188,7 @@
         function renderMatrix(data) {
             rootNode = d3.hierarchy(data, d => d.children);
             rootNode.x0 = document.getElementById('canvas-container').clientHeight / 2;
-            rootNode.y0 = 50;
+            rootNode.y0 = 80; // Moved root node slightly further right to prevent edge clipping
             if(rootNode.children) rootNode.children.forEach(c => collapse(c));
             updateGraph(rootNode);
         }
@@ -200,7 +200,7 @@
         function updateGraph(source) {
             const treeData = treeLayout(rootNode);
             const nodes = treeData.descendants(), links = treeData.links();
-            nodes.forEach(d => d.y = d.depth * 200 + 50);
+            nodes.forEach(d => d.y = d.depth * 200 + 80);
 
             // Links
             const link = gLink.selectAll("path.link").data(links, d => d.target.id || (d.target.id = Math.random()));

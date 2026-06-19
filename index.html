@@ -72,38 +72,70 @@
         // --- 1. DATA DEFINITIONS ---
         const technicalData = {
             name: "Robotics Core",
-            description: "The fundamental intersection of math, software, and physics that allows machines to interact with the real world.",
+            description: "The fundamental interdisciplinary matrix comprising math, software infrastructure, physics engines, and optimization loops.",
             children: [
                 {
-                    name: "Kinematics & Space",
-                    description: "The physics of motion without worrying about forces. How do we mathematically describe where things are?",
+                    name: "Kinematics & Dynamics",
+                    description: "The structural physics of motion and forces. Governs how robotic topologies map from internal states to physical coordinates.",
                     children: [
                         {
                             name: "Quaternions & 3D Rotation",
-                            description: "Representing how objects spin and tilt in 3D space.",
+                            description: "Representing how objects spin and tilt in 3D space, bypassing coordinate singularities.",
                             simpleExplanation: "<b>The North Pole Problem:</b> If you use normal 3-step turns (Pitch up, Yaw left, Roll sideways), pointing straight up breaks the math. 'Turning left' and 'Rolling sideways' do the exact same thing (Gimbal Lock).\n\n<b>The Fix:</b> Quaternions don't use 3 steps. They use 4 numbers to do it in 1 step. Imagine stabbing a stick through a drone at a specific angle (3 numbers for the stick's direction), and spinning the drone around that stick (1 number for the twist). No getting stuck!",
-                            math: "Euler Angles (ZYX): $\\mathbf{R} = \\mathbf{R}_z(\\psi)\\mathbf{R}_y(\\theta)\\mathbf{R}_x(\\phi)$. Subject to singularities when $\\theta = \\pm 90^\\circ$.<br>Quaternion: $\\mathbf{q} = \\begin{bmatrix} w \\\\ x \\\\ y \\\\ z \\end{bmatrix} = \\begin{bmatrix} \\cos(\\alpha/2) \\\\ v_x \\sin(\\alpha/2) \\\\ v_y \\sin(\\alpha/2) \\\\ v_z \\sin(\\alpha/2) \\end{bmatrix}$ where $\\mathbf{v}$ is the axis of rotation and $\\alpha$ is the angle.",
-                            sandboxType: "quaternion"
+                            math: "Euler Angles (ZYX): $\\mathbf{R} = \\mathbf{R}_z(\\psi)\\mathbf{R}_y(\\theta)\\mathbf{R}_x(\\phi)$. Subject to singularities.<br>Quaternion: $\\mathbf{q} = \\begin{bmatrix} w \\\\ x \\\\ y \\\\ z \\end{bmatrix} = \\begin{bmatrix} \\cos(\\alpha/2) \\\\ v_x \\sin(\\alpha/2) \\\\ v_y \\sin(\\alpha/2) \\\\ v_z \\sin(\\alpha/2) \\end{bmatrix}$ where $\\mathbf{v}$ is the axis of rotation and $\\alpha$ is the angle.",
+                            sandboxType: "quaternion",
+                            courses: [{ name: "Stanford EE263: Linear Dynamical Systems", link: "https://see.stanford.edu/Course/EE263" }],
+                            youtube: [{ name: "Spatial Math & Rotations - Ben Axelrod", link: "https://www.youtube.com/results?search_query=spatial+transformations+robotics" }],
+                            projects: [{ title: "3D Transformation Engine", lang: "C++", desc: "Construct a clean, raw math library from scratch executing Matrix/Quaternion conversions and compounding frames without external dependencies." }]
                         },
                         {
-                            name: "Kinematics (FK / IK)",
-                            description: "The relationship between robot joints and the robot's hands (end-effector).",
+                            name: "Forward & Inverse Kinematics",
+                            description: "Mapping configurations between internal joint space arrays and operational task space coordinates.",
                             simpleExplanation: "<b>Forward Kinematics (FK):</b> 'If I bend my shoulder 45 degrees and my elbow 20 degrees, exactly where is my hand?' This is easy math. Just chain the links together.\n\n<b>Inverse Kinematics (IK):</b> 'I want my hand on that cup of coffee. How should I bend my shoulder and elbow to get there?' This is hard math, because there might be multiple ways to reach the cup, or it might be out of reach!",
-                            math: "FK via DH Parameters: $\\mathbf{T}_{end}^{base} = \\prod_{i=1}^n \\mathbf{A}_i(q_i)$<br>IK via Jacobian Pseudoinverse: $\\Delta\\mathbf{q} = \\mathbf{J}^{\\dagger}\\Delta\\mathbf{x}$. We iteratively update joint angles until the error $\\Delta\\mathbf{x}$ approaches 0.",
-                            sandboxType: "none"
+                            math: "FK via Denavit-Hartenberg (DH) parameters: $\\mathbf{T}_{end}^{base} = \\prod_{i=1}^n \\mathbf{A}_i(q_i)$<br>IK via Jacobian Pseudoinverse: $\\Delta\\mathbf{q} = \\mathbf{J}^{\\dagger}\\Delta\\mathbf{x}$.",
+                            sandboxType: "none",
+                            courses: [{ name: "MIT 2.12: Introduction to Robotics", link: "https://ocw.mit.edu/courses/2-12-introduction-to-robotics-fall-2005/" }],
+                            youtube: [{ name: "Modern Robotics Course Track - Kevin Lynch", link: "https://www.youtube.com/c/ModernRobotics" }],
+                            projects: [{ title: "Analytical/Numerical 6-DOF IK Solver", lang: "Python", desc: "Implement a full geometric decoupling IK solver alongside a Newton-Raphson numerical algorithm tracking 3D trajectories." }]
+                        },
+                        {
+                            name: "Jacobians & Singularities",
+                            description: "Differential kinematics mapping vector spaces from joint rates directly into operational space velocities.",
+                            math: "Linear/Angular Velocity Mapping: $\\mathbf{v} = \\mathbf{J}(\\mathbf{q})\\dot{\\mathbf{q}}$.<br>Kinematic Singularities occur when: $\\det(\\mathbf{J}(\\mathbf{q})) = 0$",
+                            courses: [{ name: "Columbia CS4733: Computational Robotics", link: "https://www.cs.columbia.edu/~allen/F22/index.html" }],
+                            projects: [{ title: "Manipulator Singularity Detector", lang: "C++", desc: "Develop an offline verification node assessing the Manipulability Index for a standard serial industrial arm." }]
+                        },
+                        {
+                            name: "Rigid Body Dynamics",
+                            description: "Formulating physical relationships mapping joint tracking accelerations directly to physical actuator torque loads.",
+                            math: "Equation of Motion (Euler-Lagrange):<br>$$\\boldsymbol{\\tau} = \\mathbf{M}(\\mathbf{q})\\ddot{\\mathbf{q}} + \\mathbf{C}(\\mathbf{q}, \\dot{\\mathbf{q}})\\dot{\\mathbf{q}} + \\mathbf{g}(\\mathbf{q})$$",
+                            courses: [{ name: "Stanford CS223A: Introduction to Robotics", link: "https://robotics.stanford.edu/" }],
+                            youtube: [{ name: "Underactuated Robotics - Russ Tedrake", link: "https://www.youtube.com/playlist?list=PLkx8KyIQkSIY5X8s-b2Y_ZskwX8Exv96D" }],
+                            projects: [{ title: "Recursive Newton-Euler Dynamics Engine", lang: "C++", desc: "Write an efficient forward/inverse dynamics simulator evaluating joint torque constraints across complex open-chain systems." }]
                         }
                     ]
                 },
                 {
                     name: "Control Systems",
-                    description: "The algorithms that act like the robot's brain, ensuring the hardware does what the software wants.",
+                    description: "Active mathematical execution loops tracking state vectors and resolving operational error deviations dynamically.",
                     children: [
                         {
                             name: "PID Controller",
-                            description: "The most famous and widely used feedback loop in all of engineering.",
-                            simpleExplanation: "Imagine driving a car to stop exactly at a red line.\n\n<b>P (Proportional):</b> How hard you press the gas/brakes based on how far away the line is. Too low? You take forever. Too high? You zoom past the line and have to reverse.\n<b>I (Integral):</b> What if there is wind pushing you back? 'P' might not be strong enough. 'I' remembers past errors and pushes harder over time to overcome the wind.\n<b>D (Derivative):</b> As you get super close to the line, 'D' looks at how fast you are moving and taps the brakes so you don't overshoot. It predicts the future!",
-                            math: "$$u(t) = K_p e(t) + K_i \\int_0^t e(\\tau) d\\tau + K_d \\frac{de(t)}{dt}$$Where $u(t)$ is the control signal sent to the motors, and $e(t)$ is the current error (Target - Current Position).",
-                            sandboxType: "pid"
+                            description: "Classical error attenuation loops leveraging proportional, integral, and derivative corrections.",
+                            simpleExplanation: "Imagine driving a car to stop exactly at a red line.\n\n<b>P (Proportional):</b> How hard you press the gas based on distance. Too low? You take forever. Too high? You zoom past.\n<b>I (Integral):</b> What if wind pushes you back? 'I' remembers past errors and pushes harder over time to overcome the wind.\n<b>D (Derivative):</b> As you get super close to the line, 'D' looks at how fast you are moving and taps the brakes so you don't overshoot. It predicts the future!",
+                            math: "$$u(t) = K_p e(t) + K_i \\int_0^t e(\\tau) d\\tau + K_d \\frac{de(t)}{dt}$$",
+                            sandboxType: "pid",
+                            courses: [{ name: "UPenn MEAM 513: Control Systems", link: "https://www.meam.upenn.edu/" }],
+                            youtube: [{ name: "Control Systems Lectures - Brian Douglas", link: "https://www.youtube.com/user/ControlLectures" }],
+                            projects: [{ title: "Saturating PID Controller Vector", lang: "C++", desc: "Build a thread-safe, high-frequency discrete PID loop utilizing integral anti-windup algorithms for closed-loop motor velocity control." }]
+                        },
+                        {
+                            name: "Model Predictive Control (MPC)",
+                            description: "Advanced optimal control computing predictive action sequences through discrete constraint windows.",
+                            math: "Find optimal inputs over horizon $N$ by minimizing:<br>$$\\min_{\\mathbf{u}} \\sum_{k=0}^{N-1} (\\mathbf{x}_k^T\\mathbf{Q}\\mathbf{x}_k + \\mathbf{u}_k^T\\mathbf{R}\\mathbf{u}_k) \\quad \\text{s.t.} \\quad \\mathbf{x}_{k+1} = \\mathbf{A}\\mathbf{x}_k + \\mathbf{B}\\mathbf{u}_k$$",
+                            courses: [{ name: "UC Berkeley EE291D: Control/Optimization", link: "https://www.berkeley.edu/" }],
+                            youtube: [{ name: "MPC Design Walkthroughs - Steve Brunton", link: "https://www.youtube.com/c/Eigensteve" }],
+                            projects: [{ title: "MPC Autonomous Trajectory Optimizer", lang: "Python", desc: "Develop an MPC script optimizing steering inputs for a kinematic bicycle tracking waypoints around obstacle boundaries." }]
                         }
                     ]
                 },
@@ -112,24 +144,65 @@
                     description: "The computational problem of finding a valid, collision-free path from point A to point B.",
                     children: [
                         {
-                            name: "A* Pathfinding",
-                            description: "The classic algorithm for finding the shortest path around obstacles.",
+                            name: "A* Graph Search",
+                            description: "The classic algorithm for finding the shortest path around known obstacles.",
                             simpleExplanation: "Imagine you are in a maze. You could just wander randomly, or you could be smart about it.\n\nA* (A-Star) looks at every possible next step and gives it a score based on two things:\n1. How far you've traveled from the start (so you don't go in circles).\n2. An educated guess (heuristic) of how far you are from the goal (like pointing a compass at the exit).\n\nBy always taking the step with the best score, it explores like spreading water, but strongly pulled toward the target!",
-                            math: "Evaluation Function: $$f(n) = g(n) + h(n)$$Where $n$ is the next step, $g(n)$ is the exact path cost from the start to $n$, and $h(n)$ is the heuristic estimated cost from $n$ to the goal.",
-                            sandboxType: "astar"
+                            math: "Evaluation Function: $$f(n) = g(n) + h(n)$$Where $g(n)$ is the exact path cost from start to $n$, and $h(n)$ is the heuristic estimated cost to the goal.",
+                            sandboxType: "astar",
+                            courses: [{ name: "UPenn: Computational Motion Planning", link: "https://www.coursera.org/learn/robotics-motion-planning" }],
+                            projects: [{ title: "Grid-Based Nav2 Costmap Planner", lang: "C++", desc: "Write a high-performance A* costmap planner plugin for ROS 2 Nav2." }]
+                        },
+                        {
+                            name: "Sampling-Based Planning (RRT)",
+                            description: "Algorithms for high-dimensional spaces where grids are computationally impossible.",
+                            simpleExplanation: "If a robot arm has 6 joints, a grid of all possible positions would have trillions of squares. A* would freeze your computer. Instead, Rapidly-exploring Random Trees (RRT) throws random darts into the space and grows vine-like branches toward them until a branch hits the goal.",
+                            math: "RRT* guarantees asymptotic optimality: $\\lim_{N \\to \\infty} P(Cost(Solution) = Optimum) = 1$",
+                            sandboxType: "none",
+                            youtube: [{ name: "Motion Planning - Cyrill Stachniss", link: "https://www.youtube.com/c/CyrillStachniss" }],
+                            projects: [{ title: "RRT* 6-DOF Manipulator Path Finder", lang: "Python", desc: "Implement RRT* to navigate a simulated robotic arm through a crowded 3D environment without self-collisions." }]
                         }
                     ]
                 },
                 {
                     name: "Perception & Vision",
-                    description: "How a robot uses cameras and lasers to understand its surroundings.",
+                    description: "Processing spatial configurations, structural sensor clouds, and streaming image metrics into semantic spatial state representations.",
                     children: [
                         {
                             name: "Point Clouds & Lidar",
                             description: "Creating 3D maps of the world using millions of laser distance measurements.",
                             simpleExplanation: "Cameras give us flat pixels with colors. Lidar gives us a 'Point Cloud'—a massive swarm of dots floating in space. \n\nLidar works by spinning a laser really fast. It shoots a beam, waits for it to bounce off an object, and measures how long it took to return. It does this thousands of times a second. By tracking the angle and distance of every bounce, the robot builds a constellation of dots representing walls and obstacles.",
-                            math: "Cartesian Conversion from Polar Lidar Data: $$x = r \\cos(\\theta)$$$$y = r \\sin(\\theta)$$Where $r$ is the measured distance and $\\theta$ is the angle of the raycast.",
-                            sandboxType: "pointcloud"
+                            math: "Cartesian Conversion from Polar Lidar Data: $$x = r \\cos(\\theta)$$$$y = r \\sin(\\theta)$$",
+                            sandboxType: "pointcloud",
+                            youtube: [{ name: "Open3D / PCL Tutorial Tracks", link: "https://www.youtube.com/results?search_query=open3d+point+cloud+processing" }],
+                            projects: [{ title: "Lidar 3D Bounding Box Tracking", lang: "Python", desc: "Train a PointPillars network to detect vehicles in KITTI point cloud data, applying a Hungarian matching algorithm for frame-to-frame tracking." }]
+                        },
+                        {
+                            name: "State Estimation & SLAM",
+                            description: "Simultaneously localizing the robot while building a map of an unknown environment.",
+                            math: "Extended Kalman Filter (EKF) State Prediction:<br>$$\\hat{\\mathbf{x}}_{k|k-1} = f(\\hat{\\mathbf{x}}_{k-1|k-1}, \\mathbf{u}_k)$$Factor Graph optimization minimizing residuals for SLAM:<br>$$\\min_{\\mathcal{X}} \\sum_{i} \\|f(\\mathbf{x}_i, \\mathbf{u}_i) - \\mathbf{x}_{i+1}\\|_{\\boldsymbol{\\Sigma}_i}^2$$",
+                            sandboxType: "none",
+                            courses: [{ name: "University of Bonn: Photogrammetry & SLAM", link: "https://www.ipb.uni-bonn.de/lessons/" }],
+                            projects: [{ title: "Graph-SLAM Landmark Optimizer", lang: "C++", desc: "Write a 2D pose-graph optimization program using g2o or Ceres Solver to successfully close loop constraints from Lidar odometry." }]
+                        }
+                    ]
+                },
+                {
+                    name: "Software & Simulation",
+                    description: "Operational middleware layers, asynchronous message frameworks, and virtual rigid-body simulation validation platforms.",
+                    children: [
+                        {
+                            name: "ROS 2 Architecture",
+                            description: "Production-grade framework utilizing DDS middleware for reliable distributed routing.",
+                            simpleExplanation: "ROS 2 isn't an operating system like Windows. It's an internal internet for the robot. The camera 'publishes' photos to a channel, and the brain 'subscribes' to that channel. It allows hundreds of small programs to talk to each other safely.",
+                            courses: [{ name: "ETH Zurich: ROS Course", link: "https://rsl.ethz.edu/education-courses/lectures/ros.html" }],
+                            projects: [{ title: "Zero-Copy ROS 2 Image Pipeline", lang: "C++", desc: "Implement a high-frequency camera driver using loaned messages to bypass memory copying between perception nodes." }]
+                        },
+                        {
+                            name: "Physics Simulations",
+                            description: "Virtual evaluation environments to test hardware control stacks safely ahead of real-world deployments.",
+                            math: "Solves rigid body friction constraints via Projected Gauss-Seidel LCP methods.",
+                            courses: [{ name: "NVIDIA Isaac Sim Training Track", link: "https://developer.nvidia.com/isaac-sim" }],
+                            projects: [{ title: "Isaac Gym Quadruped Walker", lang: "Python", desc: "Use NVIDIA Isaac Gym to train a simulated quadruped robot to walk over uneven terrain using RL algorithms and domain randomization." }]
                         }
                     ]
                 }
@@ -137,20 +210,96 @@
         };
 
         const careerData = {
-            name: "Career Trajectories",
-            description: "The professional specializations within the modern robotics industry.",
+            name: "Robotics Careers",
+            description: "The professional industry matrix. Robotics is highly specialized; modern teams are divided into distinct algorithmic, hardware, and infrastructure sub-disciplines.",
             children: [
                 {
-                    name: "Autonomy Engineer",
-                    description: "Writes the high-level brain for path planning.",
-                    simpleExplanation: "You are the navigator. Your job isn't to figure out how to spin the wheels, but rather how to draw the safest, fastest line through a crowded room from point A to point B without hitting anything. You use algorithms like A* (like GPS routing) and RRT (randomly branching vines looking for a path).",
-                    math: "Key skills: Graph Search, Sampling-based planning, Costmaps, ROS 2 Nav2 stack."
+                    name: "Software & Algorithms",
+                    description: "The high-level brains of the robot, focusing on AI, mathematical optimization, and spatial reasoning.",
+                    children: [
+                        {
+                            name: "SLAM & Localization Engineer",
+                            description: "Focuses entirely on state estimation and mapping in unknown environments without GPS.",
+                            math: "Solves large sparse linear systems $\\mathbf{A}\\mathbf{x} = \\mathbf{b}$ using Cholesky factorization for MAP estimation.",
+                            courses: [{ name: "Georgia Tech: Mobile Robot Tracking", link: "https://www.coursera.org/" }],
+                            projects: [{ title: "Custom Visual-Inertial Odometry", lang: "C++", desc: "Build a VIO pipeline from scratch using GTSAM to track a drone's trajectory from raw camera/IMU datasets." }]
+                        },
+                        {
+                            name: "Manipulation Engineer",
+                            description: "Specializes in robotic arms, grasp generation, inverse kinematics, and collision avoidance.",
+                            math: "Calculates grasp wrench spaces and manipulability ellipsoids: $\\mathbf{v}^T (\\mathbf{J}\\mathbf{J}^T)^{-1} \\mathbf{v} \\leq 1$.",
+                            youtube: [{ name: "MoveIt 2 Developer Streams", link: "https://www.youtube.com/@moveitrobotics" }],
+                            projects: [{ title: "Custom MoveIt 2 IK Solver Plugin", lang: "C++", desc: "Write an optimized, analytical Inverse Kinematics plugin for a specific 6-DOF industrial arm." }]
+                        },
+                        {
+                            name: "Perception & Vision Engineer",
+                            description: "Bridges raw sensor data (Lidar, RGB-D) and runtime semantics using classical CV and Deep Learning.",
+                            math: "Leverages CNNs and classical techniques like RANSAC plane fitting: $\\min \\sum \\rho(e_i^2)$.",
+                            courses: [{ name: "Carnegie Mellon: 16-385 Computer Vision", link: "http://www.cs.cmu.edu/~16385/" }],
+                            projects: [{ title: "Real-Time 3D Object Segmentation", lang: "C++", desc: "Deploy a vision-guided perception pipeline leveraging TensorRT to isolate 6D poses from complex bins." }]
+                        },
+                        {
+                            name: "Autonomy & Planning Engineer",
+                            description: "Generates optimal, collision-free trajectories from point A to point B.",
+                            math: "Implements heuristic graph search (A*, D*) and optimal sampling-based planners like RRT*.",
+                            youtube: [{ name: "MATLAB: Autonomous Navigation", link: "https://www.youtube.com/playlist?list=PLn8PRpmsu08rLRGrnF-S6TyGrmA8-XGb0" }],
+                            projects: [{ title: "Frenet Frame Trajectory Optimizer", lang: "C++", desc: "Generate smooth polynomial splines for high-speed highway lane changing in a self-driving simulator." }]
+                        },
+                        {
+                            name: "Machine Learning (RL) Engineer",
+                            description: "Trains policies for complex behaviors that are too mathematically complex to derive analytically.",
+                            math: "Optimizes the expected return in an MDP using Proximal Policy Optimization (PPO).",
+                            courses: [{ name: "UC Berkeley CS285: Deep RL", link: "http://rail.eecs.berkeley.edu/deeprlcourse/" }],
+                            projects: [{ title: "Isaac Gym Quadruped Walker", lang: "Python", desc: "Train a simulated quadruped to walk over uneven terrain using massive domain randomization." }]
+                        }
+                    ]
                 },
                 {
-                    name: "Embedded Firmware Engineer",
-                    description: "Writes the low-level code that touches the metal.",
-                    simpleExplanation: "You are the nervous system. You don't care about the map. You care that when the brain says 'spin motor A at 50 RPM', the motor receives the exact electrical voltage needed to do that in 1 millisecond, without crashing.",
-                    math: "Key skills: C, C++, Microcontrollers (STM32), FreeRTOS, Hardware Interrupts, UART/SPI/I2C."
+                    name: "Embedded & Infrastructure",
+                    description: "The critical layers that connect algorithms to the metal, ensuring low latency.",
+                    children: [
+                        {
+                            name: "Robotics Middleware Engineer",
+                            description: "Builds internal communication networks (ROS 2) allowing software nodes to talk efficiently.",
+                            math: "Focuses on lock-free queues, zero-copy shared memory, and Big-O time complexity for IPC.",
+                            courses: [{ name: "Udacity: C++ Nanodegree", link: "https://www.udacity.com/course/c-plus-plus-nanodegree--nd213" }],
+                            projects: [{ title: "Zero-Copy ROS 2 Image Pipeline", lang: "C++", desc: "Implement a camera driver using ROS 2 loaned messages to bypass memory copying." }]
+                        },
+                        {
+                            name: "Embedded Firmware Engineer",
+                            description: "Writes bare-metal C/C++ code on microcontrollers to spin motors and read sensors.",
+                            math: "Utilizes discrete Z-transform control theory $C(z)$ and manages hardware interrupts / DMA.",
+                            youtube: [{ name: "Phil's Lab: STM32 & PCB Design", link: "https://www.youtube.com/c/PhilS94" }],
+                            projects: [{ title: "Custom BLDC Motor Controller", lang: "C", desc: "Write firmware for an STM32 to execute Field Oriented Control (FOC) for a brushless DC motor." }]
+                        },
+                        {
+                            name: "Simulation Engineer",
+                            description: "Creates photorealistic, physics-accurate digital twins for safe code testing.",
+                            math: "Solves rigid body contact constraints using Linear Complementarity Problems (LCP).",
+                            youtube: [{ name: "Gazebo Simulator Tutorials", link: "https://gazebosim.org/tutorials" }],
+                            projects: [{ title: "Custom Sensor Plugin for Gazebo", lang: "C++", desc: "Develop a Gazebo plugin simulating the noise profile and multipath errors of an industrial Radar." }]
+                        }
+                    ]
+                },
+                {
+                    name: "Hardware & Operations",
+                    description: "Designing the physical robot and managing fleets deployed in the real world.",
+                    children: [
+                        {
+                            name: "Mechatronics Engineer",
+                            description: "The 'glue' engineer who understands mechanical loads, electrical limits, and software constraints.",
+                            math: "Applies multi-physics modeling connecting electrical power $P = IV$ with mechanical torque $\\tau = I\\alpha$.",
+                            courses: [{ name: "MIT 2.74: Bio-inspired Robotics", link: "https://ocw.mit.edu/courses/2-74-bio-inspired-robotics-fall-2014/" }],
+                            projects: [{ title: "Self-Balancing Reaction Wheel Pendulum", lang: "Hardware", desc: "Design a 3D printed pendulum, select motor/flywheel, and tune an LQR controller to balance it." }]
+                        },
+                        {
+                            name: "Fleet & Cloud Robotics Engineer",
+                            description: "Manages the deployment and telemetry data of hundreds of robots.",
+                            math: "Focuses on REST/gRPC API latencies, and distributed database sharding strategies for IoT telemetry.",
+                            youtube: [{ name: "Foxglove Studio Visualization", link: "https://www.youtube.com/@foxglovedev" }],
+                            projects: [{ title: "WebRTC Robot Teleoperation", lang: "TypeScript", desc: "Build a secure React web dashboard to stream low-latency video and send commands to a remote ROS 2 robot." }]
+                        }
+                    ]
                 }
             ]
         };
@@ -182,13 +331,13 @@
             const gWorkspace = svg.append("g");
             gLink = gWorkspace.append("g").attr("class", "links-layer");
             gNode = gWorkspace.append("g").attr("class", "nodes-layer");
-            treeLayout = d3.tree().size([container.clientHeight - 80, container.clientWidth - 200]).separation((a,b) => a.parent == b.parent ? 1.2 : 2);
+            treeLayout = d3.tree().size([container.clientHeight - 80, container.clientWidth - 200]).separation((a,b) => a.parent == b.parent ? 1.3 : 2);
         }
 
         function renderMatrix(data) {
             rootNode = d3.hierarchy(data, d => d.children);
             rootNode.x0 = document.getElementById('canvas-container').clientHeight / 2;
-            rootNode.y0 = 80; // Moved root node slightly further right to prevent edge clipping
+            rootNode.y0 = 80; 
             if(rootNode.children) rootNode.children.forEach(c => collapse(c));
             updateGraph(rootNode);
         }
@@ -254,8 +403,7 @@
             panel.classList.remove('hidden');
             
             const color = currentMode === 'technical' ? 'text-sky-400' : 'text-emerald-400';
-            const bgHover = currentMode === 'technical' ? 'bg-sky-500/10' : 'bg-emerald-500/10';
-
+            
             let html = `
                 <div class="border-b border-slate-800 pb-4">
                     <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500">${currentMode} Module</span>
@@ -299,6 +447,61 @@
                         <div class="text-sm text-slate-300 overflow-x-auto">${data.math}</div>
                     </div>
                 `;
+            }
+
+            // --- Inject Courses and YouTube Links ---
+            if (data.courses || data.youtube) {
+                html += `<div class="space-y-3 mt-6">
+                    <h3 class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Curated Educational Resources</h3>`;
+                
+                if (data.courses) {
+                    data.courses.forEach(c => {
+                        html += `
+                            <a href="${c.link}" target="_blank" class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+                                    <span class="text-xs font-semibold text-slate-300 group-hover:text-slate-100">${c.name}</span>
+                                </div>
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded uppercase font-mono tracking-wider">University</span>
+                            </a>
+                        `;
+                    });
+                }
+                if (data.youtube) {
+                    data.youtube.forEach(y => {
+                        html += `
+                            <a href="${y.link}" target="_blank" class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                    <span class="text-xs font-semibold text-slate-300 group-hover:text-slate-100">${y.name}</span>
+                                </div>
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded uppercase font-mono tracking-wider">YouTube</span>
+                            </a>
+                        `;
+                    });
+                }
+                html += `</div>`;
+            }
+
+            // --- Inject Projects ---
+            if (data.projects) {
+                html += `<div class="space-y-3 mt-6">
+                    <h3 class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Portfolio Building Blueprints</h3>`;
+                data.projects.forEach(p => {
+                    const tagColor = p.lang === 'C++' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
+                                     p.lang === 'Python' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 
+                                     'bg-slate-500/10 text-slate-400 border-slate-500/20';
+                    html += `
+                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-xs font-bold text-slate-200">${p.title}</h4>
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 border rounded ${tagColor}">${p.lang}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">${p.desc}</p>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
             }
 
             panel.innerHTML = html;

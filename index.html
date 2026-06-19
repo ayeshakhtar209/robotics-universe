@@ -3,199 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robotics Engineering Matrix | Interactive Knowledge Map</title>
-    <!-- Tailwind CSS for modern layout -->
+    <title>Robotics Universe | Interactive Engineering Matrix</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- D3.js for visual graph construction -->
+    <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Three.js for 3D Sandboxes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- MathJax for rendering equations -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        .node circle {
-            fill: #1e293b;
-            stroke: #38bdf8;
-            stroke-width: 2px;
-            transition: all 0.2s ease;
-        }
-        .node--internal circle {
-            fill: #0f172a;
-        }
-        .node:hover circle {
-            fill: #38bdf8;
-            cursor: pointer;
-            filter: drop-shadow(0 0 8px #38bdf8);
-        }
-        .link {
-            fill: none;
-            stroke: #334155;
-            stroke-width: 1.5px;
-            stroke-dasharray: 4,4;
-            animation: dash 30s linear infinite;
-        }
-        @keyframes dash {
-            to { stroke-dashoffset: -1000; }
-        }
+        .node circle { fill: #1e293b; stroke: #38bdf8; stroke-width: 2px; transition: all 0.2s ease; }
+        .node--internal circle { fill: #0f172a; }
+        .node:hover circle { fill: #38bdf8; cursor: pointer; filter: drop-shadow(0 0 8px #38bdf8); }
+        .link { fill: none; stroke: #334155; stroke-width: 1.5px; stroke-dasharray: 4,4; animation: dash 30s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -1000; } }
+        /* Custom Scrollbar for Panel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        input[type=range] { accent-color: #38bdf8; }
+        canvas { touch-action: none; } /* Prevent scrolling while drawing on canvas */
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white overflow-hidden">
 
     <!-- Global Header -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-50">
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 z-50 shrink-0">
         <div>
-            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent">ROBOTICS KNOWLEDGE MATRIX</h1>
-            <p class="text-xs text-slate-400">An interactive map of the robotics engineering landscape inspired by VisCircuit.</p>
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent">ROBOTICS UNIVERSE</h1>
+            <p class="text-xs text-slate-400">Interactive Knowledge Map & Simulation Sandboxes</p>
         </div>
-        
-        <!-- View Controller Toggles -->
         <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-            <button id="btn-technical" onclick="switchView('technical')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20">
-                Technical Mastery Tree
-            </button>
-            <button id="btn-career" onclick="switchView('career')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200">
-                Career Trajectory Map
-            </button>
+            <button id="btn-technical" onclick="switchView('technical')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20">Technical Mastery</button>
+            <button id="btn-career" onclick="switchView('career')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200">Career Paths</button>
         </div>
     </header>
 
     <!-- Core Interactive Workspace -->
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
         
-        <!-- Visual Canvas Viewport -->
-        <section class="lg:col-span-7 xl:col-span-8 bg-slate-950 relative border-b lg:border-b-0 lg:border-r border-slate-800 h-[50vh] lg:h-[calc(100vh-73px)]">
+        <!-- Left: D3 Map Viewport -->
+        <section class="w-full lg:w-[55%] xl:w-[60%] bg-slate-950 relative border-b lg:border-b-0 lg:border-r border-slate-800 h-[40vh] lg:h-full">
             <div class="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800 text-[10px] text-slate-400 pointer-events-none">
-                Left-Click Node: Expand/Collapse & View Details | Scroll: Zoom | Drag: Pan Workspace
+                Click Node to Explore | Scroll to Zoom | Drag to Pan
             </div>
             <div id="canvas-container" class="w-full h-full"></div>
         </section>
 
-        <!-- Information & Curriculum Panel -->
-        <section id="detail-panel" class="lg:col-span-5 xl:col-span-4 bg-slate-900/30 overflow-y-auto h-[50vh] lg:h-[calc(100vh-73px)] p-6 lg:p-8 space-y-6">
-            <!-- Dynamic Injection Area via JS -->
+        <!-- Right: Detail & Sandbox Panel -->
+        <section id="detail-panel" class="w-full lg:w-[45%] xl:w-[40%] bg-slate-900/50 overflow-y-auto h-[60vh] lg:h-full p-6 lg:p-8 space-y-6 relative">
+            
+            <!-- Default Empty State -->
             <div id="panel-content-default" class="h-full flex flex-col justify-center items-center text-center text-slate-500 space-y-3">
                 <svg class="w-12 h-12 text-slate-700 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                <p class="text-sm font-medium">Select any node on the interactive map to inspect core mathematical foundations, university curriculums, and portfolio projects.</p>
+                <p class="text-sm font-medium">Select any node on the map to unlock simple explanations, mathematical proofs, and interactive sandboxes.</p>
             </div>
-            <div id="panel-content-active" class="hidden space-y-6">
-                <!-- Data populated dynamically -->
+            
+            <!-- Dynamic Content Area -->
+            <div id="panel-content-active" class="hidden flex flex-col space-y-6 pb-20">
+                <!-- Data injected via JS -->
             </div>
         </section>
     </main>
 
-    <!-- Data Tree Storage Objects -->
     <script>
+        // --- 1. DATA DEFINITIONS ---
         const technicalData = {
             name: "Robotics Core",
-            description: "The fundamental interdisciplinary matrix comprising math, software infrastructure, physics engines, and optimization loops.",
+            description: "The fundamental intersection of math, software, and physics that allows machines to interact with the real world.",
             children: [
                 {
-                    name: "Kinematics & Dynamics",
-                    description: "The structural physics of motion and forces. Governs how robotic topologies map from internal states to physical coordinates.",
+                    name: "Kinematics & Space",
+                    description: "The physics of motion without worrying about forces. How do we mathematically describe where things are?",
                     children: [
                         {
-                            name: "Spatial Transformations",
-                            description: "Representing frame translation and spatial alignment across varied coordinate frames seamlessly.",
-                            math: "Translation Vector $\\mathbf{t} \\in \\mathbb{R}^3$, Rotation Matrix $\\mathbf{R} \\in SO(3)$. Homogeneous Transformation Matrix:<br>$$\\mathbf{T} = \\begin{bmatrix} \\mathbf{R} & \\mathbf{t} \\\\ 0_{1\\times3} & 1 \\end{bmatrix} \\in SE(3)$$$$\\mathbf{q} = w + xi + yj + zk \\quad \\text{(Quaternions bypass Gimbal Lock)}$$",
-                            courses: [{ name: "Stanford EE263: Linear Dynamical Systems", link: "https://see.stanford.edu/Course/EE263" }],
-                            youtube: [{ name: "Spatial Math & Rotations - Ben Axelrod", link: "https://www.youtube.com/results?search_query=spatial+transformations+robotics" }],
-                            projects: [{ title: "3D Transformation Engine", lang: "C++", desc: "Construct a clean, raw math library from scratch executing Matrix/Quaternion conversions and compounding frames without external dependencies." }]
+                            name: "Quaternions & 3D Rotation",
+                            description: "Representing how objects spin and tilt in 3D space.",
+                            simpleExplanation: "<b>The North Pole Problem:</b> If you use normal 3-step turns (Pitch up, Yaw left, Roll sideways), pointing straight up breaks the math. 'Turning left' and 'Rolling sideways' do the exact same thing (Gimbal Lock).\n\n<b>The Fix:</b> Quaternions don't use 3 steps. They use 4 numbers to do it in 1 step. Imagine stabbing a stick through a drone at a specific angle (3 numbers for the stick's direction), and spinning the drone around that stick (1 number for the twist). No getting stuck!",
+                            math: "Euler Angles (ZYX): $\\mathbf{R} = \\mathbf{R}_z(\\psi)\\mathbf{R}_y(\\theta)\\mathbf{R}_x(\\phi)$. Subject to singularities when $\\theta = \\pm 90^\\circ$.<br>Quaternion: $\\mathbf{q} = \\begin{bmatrix} w \\\\ x \\\\ y \\\\ z \\end{bmatrix} = \\begin{bmatrix} \\cos(\\alpha/2) \\\\ v_x \\sin(\\alpha/2) \\\\ v_y \\sin(\\alpha/2) \\\\ v_z \\sin(\\alpha/2) \\end{bmatrix}$ where $\\mathbf{v}$ is the axis of rotation and $\\alpha$ is the angle.",
+                            sandboxType: "quaternion"
                         },
                         {
-                            name: "Forward & Inverse Kinematics",
-                            description: "Mapping configurations between internal joint space arrays and operational task space coordinates.",
-                            math: "Forward Kinematics utilizes Denavit-Hartenberg (DH) parameter sequencing:<br>$$\\mathbf{T}_i^{i-1} = \\mathbf{R}_z(\\theta_i)\\mathbf{T}_z(d_i)\\mathbf{T}_x(a_i)\\mathbf{R}_x(\\alpha_i)$$Inverse Kinematics (IK) solves numerical optimizations via Jacobian Pseudoinverse: $\\Delta \\mathbf{q} = \\mathbf{J}^{\\dagger} \\Delta \\mathbf{x}$.",
-                            courses: [{ name: "MIT 2.12: Introduction to Robotics", link: "https://ocw.mit.edu/courses/2-12-introduction-to-robotics-fall-2005/" }],
-                            youtube: [{ name: "Modern Robotics Course Track - Kevin Lynch", link: "https://www.youtube.com/c/ModernRobotics" }],
-                            projects: [{ title: "Analytical/Numerical 6-DOF IK Solver", lang: "Python", desc: "Implement a full geometric decoupling IK solver alongside a Newton-Raphson numerical algorithm tracking 3D trajectories." }]
-                        },
-                        {
-                            name: "Jacobians & Singularities",
-                            description: "Differential kinematics mapping vector spaces from joint rates directly into operational space velocities.",
-                            math: "Linear/Angular Velocity Mapping: $\\mathbf{v} = \\mathbf{J}(\\mathbf{q})\\dot{\\mathbf{q}}$.<br>Kinematic Singularities occur precisely when spatial velocity configurations fail rank metrics:<br>$$\\det(\\mathbf{J}(\\mathbf{q})) = 0$$At a singularity, structural mobility is lost, driving structural joint velocities towards infinity.",
-                            courses: [{ name: "Columbia CS4733: Computational Robotics", link: "https://www.cs.columbia.edu/~allen/F22/index.html" }],
-                            youtube: [{ name: "Robot Jacobians Explained - Angela Sodemann", link: "https://www.youtube.com/results?search_query=Angela+Sodemann+Jacobian" }],
-                            projects: [{ title: "Manipulator Singularity Detector", lang: "C++", desc: "Develop an offline verification node assessing the Manipulability Index $\\sqrt{\\det(\\mathbf{J}\\mathbf{J}^T)}$ for a standard serial industrial arm." }]
-                        },
-                        {
-                            name: "Rigid Body Dynamics",
-                            description: "Formulating physical relationships mapping joint tracking accelerations directly to physical actuator torque loads.",
-                            math: "Equation of Motion (Euler-Lagrange Formuation):<br>$$\\boldsymbol{\\tau} = \\mathbf{M}(\\mathbf{q})\\ddot{\\mathbf{q}} + \\mathbf{C}(\\mathbf{q}, \\dot{\\mathbf{q}})\\dot{\\mathbf{q}} + \\mathbf{g}(\\mathbf{q})$$Where $\\mathbf{M}$ matches mass matrices, $\\mathbf{C}$ tracks Coriolis terms, and $\\mathbf{g}$ handles gravity profiles.",
-                            courses: [{ name: "Stanford CS223A: Introduction to Robotics", link: "https://robotics.stanford.edu/" }],
-                            youtube: [{ name: "Underactuated Robotics - Russ Tedrake", link: "https://www.youtube.com/playlist?list=PLkx8KyIQkSIY5X8s-b2Y_ZskwX8Exv96D" }],
-                            projects: [{ title: "Recursive Newton-Euler Dynamics Engine", lang: "C++", desc: "Write an efficient forward/inverse dynamics simulator evaluating joint torque constraints across complex open-chain multi-body systems." }]
+                            name: "Kinematics (FK / IK)",
+                            description: "The relationship between robot joints and the robot's hands (end-effector).",
+                            simpleExplanation: "<b>Forward Kinematics (FK):</b> 'If I bend my shoulder 45 degrees and my elbow 20 degrees, exactly where is my hand?' This is easy math. Just chain the links together.\n\n<b>Inverse Kinematics (IK):</b> 'I want my hand on that cup of coffee. How should I bend my shoulder and elbow to get there?' This is hard math, because there might be multiple ways to reach the cup, or it might be out of reach!",
+                            math: "FK via DH Parameters: $\\mathbf{T}_{end}^{base} = \\prod_{i=1}^n \\mathbf{A}_i(q_i)$<br>IK via Jacobian Pseudoinverse: $\\Delta\\mathbf{q} = \\mathbf{J}^{\\dagger}\\Delta\\mathbf{x}$. We iteratively update joint angles until the error $\\Delta\\mathbf{x}$ approaches 0.",
+                            sandboxType: "none"
                         }
                     ]
                 },
                 {
-                    name: "Control Loops",
-                    description: "Active mathematical execution loops tracking state vectors and resolving operational error deviations dynamically.",
+                    name: "Control Systems",
+                    description: "The algorithms that act like the robot's brain, ensuring the hardware does what the software wants.",
                     children: [
                         {
-                            name: "PID Regulation",
-                            description: "Classical error attenuation loops leveraging proportional, integral, and derivative corrections.",
-                            math: "$$\\mathbf{u}(t) = K_p \\mathbf{e}(t) + K_i \\int_0^t \\mathbf{e}(\\tau)d\\tau + K_d \\frac{d\\mathbf{e}(t)}{dt}$$Includes Anti-Windup saturation routines to manage integral term accumulation limits.",
-                            courses: [{ name: "UPenn MEAM 513: Control Systems", link: "https://www.meam.upenn.edu/" }],
-                            youtube: [{ name: "Control Systems Lectures - Brian Douglas", link: "https://www.youtube.com/user/ControlLectures" }],
-                            projects: [{ title: "Saturating PID Controller Vector", lang: "C++", desc: "Build a thread-safe, high-frequency discrete PID loop utilizing integral anti-windup algorithms for closed-loop motor velocity control." }]
-                        },
+                            name: "PID Controller",
+                            description: "The most famous and widely used feedback loop in all of engineering.",
+                            simpleExplanation: "Imagine driving a car to stop exactly at a red line.\n\n<b>P (Proportional):</b> How hard you press the gas/brakes based on how far away the line is. Too low? You take forever. Too high? You zoom past the line and have to reverse.\n<b>I (Integral):</b> What if there is wind pushing you back? 'P' might not be strong enough. 'I' remembers past errors and pushes harder over time to overcome the wind.\n<b>D (Derivative):</b> As you get super close to the line, 'D' looks at how fast you are moving and taps the brakes so you don't overshoot. It predicts the future!",
+                            math: "$$u(t) = K_p e(t) + K_i \\int_0^t e(\\tau) d\\tau + K_d \\frac{de(t)}{dt}$$Where $u(t)$ is the control signal sent to the motors, and $e(t)$ is the current error (Target - Current Position).",
+                            sandboxType: "pid"
+                        }
+                    ]
+                },
+                {
+                    name: "Motion Planning",
+                    description: "The computational problem of finding a valid, collision-free path from point A to point B.",
+                    children: [
                         {
-                            name: "Model Predictive Control",
-                            description: "Advanced optimal control computing predictive action sequences through discrete constraint windows.",
-                            math: "Find optimal inputs over control horizon $N$ by minimizing:<br>$$\\min_{\\mathbf{u}} \\sum_{k=0}^{N-1} (\\mathbf{x}_k^T\\mathbf{Q}\\mathbf{x}_k + \\mathbf{u}_k^T\\mathbf{R}\\mathbf{u}_k) \\quad \\text{s.t.} \\quad \\mathbf{x}_{k+1} = \\mathbf{A}\\mathbf{x}_k + \\mathbf{B}\\mathbf{u}_k$$",
-                            courses: [{ name: "UC Berkeley EE291D: Control/Optimization", link: "https://www.berkeley.edu/" }],
-                            youtube: [{ name: "MPC Design Walkthroughs - Steve Brunton", link: "https://www.youtube.com/c/Eigensteve" }],
-                            projects: [{ title: "MPC Autonomous Trajectory Optimizer", lang: "Python", desc: "Develop an MPC script optimizing steering inputs for a kinematic bicycle tracking waypoints around obstacle boundaries." }]
+                            name: "A* Pathfinding",
+                            description: "The classic algorithm for finding the shortest path around obstacles.",
+                            simpleExplanation: "Imagine you are in a maze. You could just wander randomly, or you could be smart about it.\n\nA* (A-Star) looks at every possible next step and gives it a score based on two things:\n1. How far you've traveled from the start (so you don't go in circles).\n2. An educated guess (heuristic) of how far you are from the goal (like pointing a compass at the exit).\n\nBy always taking the step with the best score, it explores like spreading water, but strongly pulled toward the target!",
+                            math: "Evaluation Function: $$f(n) = g(n) + h(n)$$Where $n$ is the next step, $g(n)$ is the exact path cost from the start to $n$, and $h(n)$ is the heuristic estimated cost from $n$ to the goal.",
+                            sandboxType: "astar"
                         }
                     ]
                 },
                 {
                     name: "Perception & Vision",
-                    description: "Processing spatial configurations, structural sensor clouds, and streaming image metrics into semantic situational spatial state representations.",
+                    description: "How a robot uses cameras and lasers to understand its surroundings.",
                     children: [
                         {
-                            name: "State Estimation & Fusion",
-                            description: "Fusing asynchronous telemetry from IMUs, wheel encoders, and GPS receivers to isolate accurate positioning data.",
-                            math: "Extended Kalman Filter (EKF) State Prediction Step:<br>$$\\hat{\\mathbf{x}}_{k|k-1} = f(\\hat{\\mathbf{x}}_{k-1|k-1}, \\mathbf{u}_k)$$Linearized Measurement Update Matrix Tracking Model Errors:<br>$$\\mathbf{H}_k = \\left. \\frac{\\partial h}{\\partial \\mathbf{x}} \\right|_{\\hat{\\mathbf{x}}_{k|k-1}}$$",
-                            courses: [{ name: "UMich ROB 501: Math for Robotics", link: "https://robotics.umich.edu/" }],
-                            youtube: [{ name: "Kalman Filter Intuition - Cyrill Stachniss", link: "https://www.youtube.com/c/CyrillStachniss" }],
-                            projects: [{ title: "Sensor Fusion EKF Architecture", lang: "C++", desc: "Construct an asynchronous sensor fusion stack integrating IMU updates and wheel odometry strings to accurately trace chassis coordinates." }]
-                        },
-                        {
-                            name: "Computer Vision & Point Clouds",
-                            description: "Filtering, segmenting, and extracting geometry from structural 3D data streams and camera arrays.",
-                            math: "Point Cloud Normal Extraction via local Covariance Matrix Optimization:<br>$$\\mathbf{C} = \\frac{1}{k}\\sum_{i=1}^k (\\mathbf{p}_i - \\overline{\\mathbf{p}})(\\mathbf{p}_i - \\overline{\\mathbf{p}})^T$$Employs topological depth profiles for target isolation in challenging, textureless pick-and-place sorting arrays.",
-                            courses: [{ name: "Stanford CS231n: CNNs for Visual Recognition", link: "http://cs231n.stanford.edu/" }],
-                            youtube: [{ name: "Open3D / PCL Tutorial Tracks", link: "https://www.youtube.com/results?search_query=open3d+point+cloud+processing" }],
-                            projects: [{ title: "Topological Bin-Picking Segmentation Pipeline", lang: "Python", desc: "Build a structured pipeline using Open3D/OpenCV to ingest depth maps, run RANSAC geometric segmentation, and extract valid 6D pick poses for unpatterned parts." }]
-                        },
-                        {
-                            name: "SLAM Algorithms",
-                            description: "Simultaneously constructing spatial environmental maps while estimating real-time localized paths.",
-                            math: "Factor Graph optimization formulations minimizing overall structural measurement residuals:<br>$$\\min_{\\mathcal{X}} \\sum_{i} \\|f(\\mathbf{x}_i, \\mathbf{u}_i) - \\mathbf{x}_{i+1}\\|_{\\boldsymbol{\\Sigma}_i}^2 + \\sum_{j} \\|h(\\mathbf{x}_{i_j}, \\mathbf{l}_j) - \\mathbf{z}_j\\|_{\\boldsymbol{\\Lambda}_j}^2$$",
-                            courses: [{ name: "University of Bonn: Photogrammetry & SLAM", link: "https://www.ipb.uni-bonn.de/lessons/" }],
-                            youtube: [{ name: "SLAM Course Lectures - Cyrill Stachniss", link: "https://www.youtube.com/playlist?list=PLgnQpQtFTOGQrZ4O5AWAEIypda0BC67v1" }],
-                            projects: [{ title: "Graph-SLAM Landmark Optimizer", lang: "Python", desc: "Write a 2D pose-graph optimization program using g2o or a custom Gauss-Newton solver to successfully close loop constraints." }]
-                        }
-                    ]
-                },
-                {
-                    name: "Software & Simulation",
-                    description: "Operational middleware layers, asynchronous message frameworks, and virtual rigid-body simulation validation platforms.",
-                    children: [
-                        {
-                            name: "ROS 2 Architecture",
-                            description: "Production-grade framework for modern robotics, utilizing DDS middleware architectures for reliable distributed routing.",
-                            math: "Deterministic execution managed through rclcpp executor abstractions. Structured communication relies on pub/sub topics, services (request/reply), and stateful action servers.",
-                            courses: [{ name: "ETH Zurich: ROS Course", link: "https://rsl.ethz.edu/education-courses/lectures/ros.html" }],
-                            youtube: [{ name: "Articulated Robotics - ROS 2 Guides", link: "https://www.youtube.com/c/ArticulatedRobotics" }],
-                            projects: [{ title: "Custom URDF Mobile Robot Controller", lang: "C++", desc: "Design a complete URDF/Xacro configuration for a mobile manipulator. Implement multi-threaded lifecycle nodes to handle path instructions and telemetry parsing." }]
-                        },
-                        {
-                            name: "Physics Simulations",
-                            description: "Virtual evaluation environments utilizing analytical physics engines to test hardware control stacks safely ahead of real-world deployments.",
-                            math: "Solves rigid body friction constraints via Projected Gauss-Seidel LCP methods. Combines photorealistic ray-tracing with massive GPU parallelization to bridge the Sim-to-Real gap.",
-                            courses: [{ name: "NVIDIA Isaac Sim Training Track", link: "https://developer.nvidia.com/isaac-sim" }],
-                            youtube: [{ name: "Open Source Robotics Foundation: Gazebo Tracks", link: "https://www.youtube.com/c/OSRForg" }],
-                            projects: [{ title: "Isaac Sim Reinforcement Learning Environment", lang: "Python", desc: "Construct an NVIDIA Isaac Sim workspace featuring a parametric robot configuration. Use domain randomization techniques to optimize robust object-grasping controls." }]
+                            name: "Point Clouds & Lidar",
+                            description: "Creating 3D maps of the world using millions of laser distance measurements.",
+                            simpleExplanation: "Cameras give us flat pixels with colors. Lidar gives us a 'Point Cloud'—a massive swarm of dots floating in space. \n\nLidar works by spinning a laser really fast. It shoots a beam, waits for it to bounce off an object, and measures how long it took to return. It does this thousands of times a second. By tracking the angle and distance of every bounce, the robot builds a constellation of dots representing walls and obstacles.",
+                            math: "Cartesian Conversion from Polar Lidar Data: $$x = r \\cos(\\theta)$$$$y = r \\sin(\\theta)$$Where $r$ is the measured distance and $\\theta$ is the angle of the raycast.",
+                            sandboxType: "pointcloud"
                         }
                     ]
                 }
@@ -203,386 +137,716 @@
         };
 
         const careerData = {
-    name: "Robotics Careers",
-    description: "The professional industry matrix. Robotics is highly specialized; modern teams are divided into distinct algorithmic, hardware, and infrastructure sub-disciplines.",
-    children: [
-        {
-            name: "Software & Algorithms",
-            description: "The high-level brains of the robot, focusing on AI, mathematical optimization, and spatial reasoning.",
+            name: "Career Trajectories",
+            description: "The professional specializations within the modern robotics industry.",
             children: [
                 {
-                    name: "SLAM & Localization Engineer",
-                    description: "Focuses entirely on state estimation and mapping in unknown environments without GPS.",
-                    math: "Factor Graph Optimization via MAP (Maximum A Posteriori) estimation. Solves large sparse linear systems $\\mathbf{A}\\mathbf{x} = \\mathbf{b}$ using Cholesky factorization.",
-                    courses: [{ name: "Georgia Tech: Mobile Robot Tracking & SLAM", link: "https://www.coursera.org/" }],
-                    youtube: [{ name: "GTSAM Tutorials", link: "https://gtsam.org/" }],
-                    projects: [{ title: "Custom Visual-Inertial Odometry", lang: "C++", desc: "Build a VIO pipeline from scratch using GTSAM or Ceres Solver to track a drone's trajectory from a raw camera and IMU dataset." }]
-                },
-                {
-                    name: "Manipulation & Kinematics Engineer",
-                    description: "Specializes in robotic arms, grasp generation, inverse kinematics, and collision avoidance.",
-                    math: "Calculates grasp wrench spaces and manipulability ellipsoids: $\\mathbf{v}^T (\\mathbf{J}\\mathbf{J}^T)^{-1} \\mathbf{v} \\leq 1$ to find optimal grip configurations.",
-                    courses: [{ name: "Northwestern: Modern Robotics - Grasping", link: "https://modernrobotics.northwestern.edu/" }],
-                    youtube: [{ name: "MoveIt 2 Developer Streams", link: "https://www.youtube.com/@moveitrobotics" }],
-                    projects: [{ title: "Custom MoveIt 2 IK Solver Plugin", lang: "C++", desc: "Write an optimized, analytical Inverse Kinematics plugin for a specific 6-DOF industrial arm and integrate it into the ROS 2 MoveIt pipeline." }]
-                },
-                {
-                    name: "Perception & Vision Engineer",
-                    description: "Bridges raw sensor data (Lidar, RGB-D) and runtime semantics using classical CV and Deep Learning.",
-                    math: "Leverages deep neural networks (CNNs, Transformers) and classical techniques like RANSAC plane fitting: $\\min \\sum \\rho(e_i^2)$ for robust outlier rejection.",
-                    courses: [{ name: "Carnegie Mellon: 16-385 Computer Vision", link: "http://www.cs.cmu.edu/~16385/" }],
-                    youtube: [{ name: "Cyrill Stachniss: Photogrammetry", link: "https://www.youtube.com/c/CyrillStachniss" }],
-                    projects: [{ title: "Lidar 3D Bounding Box Tracking", lang: "Python", desc: "Train a PointPillars network to detect vehicles in KITTI point cloud data, applying a Hungarian matching algorithm for frame-to-frame tracking." }]
-                },
-                {
-                    name: "Autonomy & Path Planning Engineer",
-                    description: "Generates optimal, collision-free trajectories from point A to point B.",
-                    math: "Implements heuristic graph search algorithms (A*, D*) and optimal sampling-based planners like RRT* ensuring asymptotic optimality as samples $N \\to \\infty$.",
-                    courses: [{ name: "UPenn: Computational Motion Planning", link: "https://www.coursera.org/learn/robotics-motion-planning" }],
-                    youtube: [{ name: "MATLAB: Autonomous Navigation Series", link: "https://www.youtube.com/playlist?list=PLn8PRpmsu08rLRGrnF-S6TyGrmA8-XGb0" }],
-                    projects: [{ title: "Frenet Frame Trajectory Optimizer", lang: "C++", desc: "Generate smooth polynomial splines in the Frenet-Serret frame $(s, d)$ for high-speed highway lane changing in a self-driving car simulator." }]
-                },
-                {
-                    name: "Machine Learning (RL) Engineer",
-                    description: "Trains policies for complex behaviors (like bipedal walking) that are too mathematically complex to derive analytically.",
-                    math: "Optimizes the expected return in a Markov Decision Process (MDP) using algorithms like Proximal Policy Optimization (PPO): $\\max_\\theta \\mathbb{E}[ \\min(r_t(\\theta)\\hat{A}_t, \\text{clip}(r_t(\\theta), 1-\\epsilon, 1+\\epsilon)\\hat{A}_t) ]$.",
-                    courses: [{ name: "UC Berkeley CS285: Deep Reinforcement Learning", link: "http://rail.eecs.berkeley.edu/deeprlcourse/" }],
-                    youtube: [{ name: "Hugging Face Deep RL Course", link: "https://www.youtube.com/watch?v=q0BigVcCOvM" }],
-                    projects: [{ title: "Isaac Gym Quadruped Walker", lang: "Python", desc: "Use NVIDIA Isaac Gym to train a simulated quadruped robot to walk over uneven terrain using PPO and massive domain randomization." }]
-                }
-            ]
-        },
-        {
-            name: "Embedded & Infrastructure",
-            description: "The critical layers that connect high-level algorithms to the physical metal, ensuring low latency and reliability.",
-            children: [
-                {
-                    name: "Robotics Middleware Engineer",
-                    description: "Builds the internal communication networks (like ROS 2) that allow different software nodes to talk efficiently.",
-                    math: "Focuses on computer science fundamentals: lock-free queues, zero-copy shared memory algorithms, and minimizing Big-O time complexity for IPC (Inter-Process Communication).",
-                    courses: [{ name: "Udacity: C++ Nanodegree", link: "https://www.udacity.com/course/c-plus-plus-nanodegree--nd213" }],
-                    youtube: [{ name: "CppCon Robotics Talks", link: "https://www.youtube.com/user/CppCon" }],
-                    projects: [{ title: "Zero-Copy ROS 2 Image Pipeline", lang: "C++", desc: "Implement a high-frequency camera driver using ROS 2 loaned messages to bypass memory copying between perception and encoding nodes." }]
+                    name: "Autonomy Engineer",
+                    description: "Writes the high-level brain for path planning.",
+                    simpleExplanation: "You are the navigator. Your job isn't to figure out how to spin the wheels, but rather how to draw the safest, fastest line through a crowded room from point A to point B without hitting anything. You use algorithms like A* (like GPS routing) and RRT (randomly branching vines looking for a path).",
+                    math: "Key skills: Graph Search, Sampling-based planning, Costmaps, ROS 2 Nav2 stack."
                 },
                 {
                     name: "Embedded Firmware Engineer",
-                    description: "Writes the bare-metal C/C++ code that runs on microcontrollers to spin motors and read sensors.",
-                    math: "Utilizes discrete Z-transform control theory $C(z)$ and handles bitwise hardware register configurations to manage Direct Memory Access (DMA) and hardware interrupts.",
-                    courses: [{ name: "UT Austin: Embedded Systems", link: "https://www.edx.org/course/embedded-systems-shape-the-world-microcontroller-i" }],
-                    youtube: [{ name: "Phil's Lab: STM32 & PCB Design", link: "https://www.youtube.com/c/PhilS94" }],
-                    projects: [{ title: "Custom BLDC Motor Controller", lang: "C", desc: "Write firmware for an STM32 microcontroller to execute Field Oriented Control (FOC) for a brushless DC motor, commutating based on encoder feedback." }]
-                },
-                {
-                    name: "Simulation & Tooling Engineer",
-                    description: "Creates photorealistic, physics-accurate virtual environments (digital twins) for software teams to test code safely.",
-                    math: "Solves rigid body contact constraints using Linear Complementarity Problems (LCP). Focuses heavily on 3D geometry and rendering pipelines.",
-                    courses: [{ name: "NVIDIA Deep Learning Institute: Isaac Sim", link: "https://courses.nvidia.com/" }],
-                    youtube: [{ name: "Gazebo Simulator Tutorials", link: "https://gazebosim.org/tutorials" }],
-                    projects: [{ title: "Custom Sensor Plugin for Gazebo", lang: "C++", desc: "Develop a custom Gazebo physics plugin that simulates the noise profile and multipath errors of a specific industrial Radar sensor." }]
+                    description: "Writes the low-level code that touches the metal.",
+                    simpleExplanation: "You are the nervous system. You don't care about the map. You care that when the brain says 'spin motor A at 50 RPM', the motor receives the exact electrical voltage needed to do that in 1 millisecond, without crashing.",
+                    math: "Key skills: C, C++, Microcontrollers (STM32), FreeRTOS, Hardware Interrupts, UART/SPI/I2C."
                 }
             ]
-        },
-        {
-            name: "Hardware & Operations",
-            description: "Designing the physical robot, integrating it, and managing thousands of them in the real world.",
-            children: [
-                {
-                    name: "Mechatronics / Systems Engineer",
-                    description: "The 'glue' engineer who understands mechanical loads, electrical limits, and software constraints to make them work together.",
-                    math: "Applies multi-physics modeling (e.g., in MATLAB/Simulink) connecting electrical power $P = IV$ with mechanical torque $\\tau = I\\alpha$ to size actuators.",
-                    courses: [{ name: "MIT 2.74: Bio-inspired Robotics", link: "https://ocw.mit.edu/courses/2-74-bio-inspired-robotics-fall-2014/" }],
-                    youtube: [{ name: "James Bruton: DIY Mechatronics", link: "https://www.youtube.com/user/jamesbruton" }],
-                    projects: [{ title: "Self-Balancing Reaction Wheel Inverted Pendulum", lang: "C++ / Hardware", desc: "Design a 3D printed pendulum, select an appropriate motor/flywheel combo, and tune an LQR controller to keep it balanced." }]
-                },
-                {
-                    name: "Fleet & Cloud Robotics Engineer",
-                    description: "Manages the deployment, monitoring, and telemetry data of hundreds of robots deployed in warehouses or cities.",
-                    math: "Focuses on network topologies, REST/gRPC API latencies, and distributed database sharding strategies to handle massive influxes of IoT telemetry.",
-                    courses: [{ name: "AWS IoT Core Training", link: "https://aws.amazon.com/iot-core/" }],
-                    youtube: [{ name: "Foxglove Studio Data Visualization", link: "https://www.youtube.com/@foxglovedev" }],
-                    projects: [{ title: "WebRTC Remote Robot Teleoperation", lang: "TypeScript / Python", desc: "Build a secure web dashboard using React and WebRTC to stream low-latency video and send joystick commands to a remote ROS 2 robot." }]
-                }
-            ]
-        }
-    ]
-};
+        };
 
+        // --- 2. GLOBAL STATE & D3 INITIALIZATION ---
         let currentMode = 'technical';
-        let rootNode = null;
-        let svg = null;
-        let gLink = null;
-        let gNode = null;
-        let treeLayout = null;
+        let rootNode = null, svg = null, gLink = null, gNode = null, treeLayout = null;
 
-        // Initialize Application
         window.addEventListener('DOMContentLoaded', () => {
-            initD3Structure();
-            renderMatrixView(technicalData);
+            initD3();
+            renderMatrix(technicalData);
         });
 
         function switchView(mode) {
             currentMode = mode;
-            const btnTech = document.getElementById('btn-technical');
-            const btnCareer = document.getElementById('btn-career');
+            document.getElementById('btn-technical').className = mode === 'technical' ? "px-4 py-2 text-xs font-semibold rounded-lg bg-sky-500 text-slate-950" : "px-4 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200";
+            document.getElementById('btn-career').className = mode === 'career' ? "px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-500 text-slate-950" : "px-4 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200";
             
-            if(mode === 'technical') {
-                btnTech.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20";
-                btnCareer.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200";
-                renderMatrixView(technicalData);
-            } else {
-                btnCareer.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20";
-                btnTech.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-slate-200";
-                renderMatrixView(careerData);
-            }
-            
-            // Clear Panel Content
+            cleanupSandbox();
             document.getElementById('panel-content-active').classList.add('hidden');
             document.getElementById('panel-content-default').classList.remove('hidden');
+            renderMatrix(mode === 'technical' ? technicalData : careerData);
         }
 
-        function initD3Structure() {
+        function initD3() {
             const container = document.getElementById('canvas-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-
-            svg = d3.select("#canvas-container")
-                .append("svg")
-                .attr("width", "100%")
-                .attr("height", "100%")
-                .style("background-color", "#020617")
-                .call(d3.zoom().on("zoom", (event) => {
-                    gWorkspace.attr("transform", event.transform);
-                }))
-                .append("g");
-
-            // Base background grid effect
-            svg.append("defs").append("pattern")
-                .attr("id", "grid")
-                .attr("width", 40)
-                .attr("height", 40)
-                .attr("patternUnits", "userSpaceOnUse")
-                .append("path")
-                .attr("d", "M 40 0 L 0 0 0 40")
-                .attr("fill", "none")
-                .attr("stroke", "#0f172a")
-                .attr("stroke-width", 1);
-            
-            svg.append("rect")
-                .attr("width", "3000")
-                .attr("height", "3000")
-                .attr("x", "-1500")
-                .attr("y", "-1500")
-                .attr("fill", "url(#grid)")
-                .lower();
-
+            svg = d3.select("#canvas-container").append("svg").attr("width", "100%").attr("height", "100%")
+                .call(d3.zoom().on("zoom", e => gWorkspace.attr("transform", e.transform))).append("g");
             const gWorkspace = svg.append("g");
             gLink = gWorkspace.append("g").attr("class", "links-layer");
             gNode = gWorkspace.append("g").attr("class", "nodes-layer");
-
-            // Configure layout dimensions
-            treeLayout = d3.tree()
-                .size([height - 100, width - 260])
-                .separation((a, b) => (a.parent == b.parent ? 1.2 : 2.0));
+            treeLayout = d3.tree().size([container.clientHeight - 80, container.clientWidth - 200]).separation((a,b) => a.parent == b.parent ? 1.2 : 2);
         }
 
-        function renderMatrixView(sourceData) {
-            rootNode = d3.hierarchy(sourceData, d => d.children);
+        function renderMatrix(data) {
+            rootNode = d3.hierarchy(data, d => d.children);
             rootNode.x0 = document.getElementById('canvas-container').clientHeight / 2;
-            rootNode.y0 = 0;
-
-            // Collapse sub-levels initially to keep the visual clean
-            if(rootNode.children) {
-                rootNode.children.forEach(collapseSubNodes);
-            }
-
-            updateGraphLayout(rootNode);
+            rootNode.y0 = 50;
+            if(rootNode.children) rootNode.children.forEach(c => collapse(c));
+            updateGraph(rootNode);
         }
 
-        function collapseSubNodes(d) {
-            if (d.children) {
-                d._children = d.children;
-                d._children.forEach(collapseSubNodes);
-                d.children = null;
-            }
+        function collapse(d) {
+            if(d.children) { d._children = d.children; d._children.forEach(collapse); d.children = null; }
         }
 
-        function updateGraphLayout(source) {
+        function updateGraph(source) {
             const treeData = treeLayout(rootNode);
-            const nodes = treeData.descendants();
-            const links = treeData.links();
+            const nodes = treeData.descendants(), links = treeData.links();
+            nodes.forEach(d => d.y = d.depth * 200 + 50);
 
-            // Project horizontal coordinate depth scaling
-            nodes.forEach(d => { d.y = d.depth * 220; });
-
-            // --- Links Pipeline ---
-            const linkSelection = gLink.selectAll("path.link")
-                .data(links, d => d.target.id || (d.target.id = Math.random().toString(36).substr(2, 9)));
-
-            const linkEnter = linkSelection.enter().append("path")
-                .attr("class", "link")
-                .attr("d", d => {
-                    const o = { x: source.x0, y: source.y0 };
-                    return diagonalPath(o, o);
-                });
-
-            const linkUpdate = linkEnter.merge(linkSelection);
-            linkUpdate.transition().duration(400)
-                .attr("d", d => diagonalPath(d.source, d.target))
+            // Links
+            const link = gLink.selectAll("path.link").data(links, d => d.target.id || (d.target.id = Math.random()));
+            const linkEnter = link.enter().append("path").attr("class", "link").attr("d", d => {
+                const o = {x: source.x0, y: source.y0}; return diag(o, o);
+            });
+            linkEnter.merge(link).transition().duration(400).attr("d", d => diag(d.source, d.target))
                 .style("stroke", currentMode === 'technical' ? '#0284c7' : '#059669');
+            link.exit().transition().duration(400).attr("d", d => {
+                const o = {x: source.x, y: source.y}; return diag(o, o);
+            }).remove();
 
-            linkSelection.exit().transition().duration(400)
-                .attr("d", d => {
-                    const o = { x: source.x, y: source.y };
-                    return diagonalPath(o, o);
-                }).remove();
-
-            // --- Nodes Pipeline ---
-            const nodeSelection = gNode.selectAll("g.node")
-                .data(nodes, d => d.id || (d.id = Math.random().toString(36).substr(2, 9)));
-
-            const nodeEnter = nodeSelection.enter().append("g")
+            // Nodes
+            const node = gNode.selectAll("g.node").data(nodes, d => d.id || (d.id = Math.random()));
+            const nodeEnter = node.enter().append("g")
                 .attr("class", d => `node ${d.children || d._children ? 'node--internal' : 'node--leaf'}`)
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
-                .on("click", (event, d) => {
-                    handleNodeInteraction(event, d);
+                .on("click", (e, d) => {
+                    if(d.children) { d._children = d.children; d.children = null; }
+                    else { d.children = d._children; d._children = null; }
+                    updateGraph(d);
+                    buildPanel(d.data);
                 });
 
-            nodeEnter.append("circle")
-                .attr("r", 6)
-                .style("stroke", currentMode === 'technical' ? '#38bdf8' : '#34d399');
+            nodeEnter.append("circle").attr("r", 6).style("stroke", currentMode === 'technical' ? '#38bdf8' : '#34d399');
+            nodeEnter.append("text").attr("dy", ".31em").attr("x", d => d.children || d._children ? -12 : 12)
+                .attr("text-anchor", d => d.children || d._children ? "end" : "start").text(d => d.data.name)
+                .attr("class", "text-[11px] font-medium tracking-wide fill-slate-200").style("text-shadow", "0 2px 4px black");
 
-            nodeEnter.append("text")
-                .attr("dy", ".31em")
-                .attr("x", d => d.children || d._children ? -12 : 12)
-                .attr("text-anchor", d => d.children || d._children ? "end" : "start")
-                .text(d => d.data.name)
-                .attr("class", "text-[11px] font-medium tracking-wide fill-slate-300 font-sans")
-                .style("text-shadow", "0 2px 4px rgba(0,0,0,0.8)");
+            const nodeUpdate = nodeEnter.merge(node);
+            nodeUpdate.transition().duration(400).attr("transform", d => `translate(${d.y},${d.x})`);
+            nodeUpdate.select("circle").style("fill", d => d._children ? (currentMode === 'technical' ? '#0369a1' : '#047857') : '#0f172a');
+            node.exit().transition().duration(400).attr("transform", d => `translate(${source.y},${source.x})`).remove();
+            nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+        }
+        function diag(s, d) { return `M ${s.y} ${s.x} C ${(s.y + d.y)/2} ${s.x}, ${(s.y + d.y)/2} ${d.x}, ${d.y} ${d.x}`; }
 
-            const nodeUpdate = nodeEnter.merge(nodeSelection);
+        // --- 3. PANEL & SANDBOX INJECTION ---
+        let currentAnimationId = null;
+
+        function cleanupSandbox() {
+            if(currentAnimationId) { cancelAnimationFrame(currentAnimationId); currentAnimationId = null; }
+            const container = document.getElementById('sandbox-container-div');
+            if(container) container.innerHTML = '';
+        }
+
+        function buildPanel(data) {
+            cleanupSandbox();
+            document.getElementById('panel-content-default').classList.add('hidden');
+            const panel = document.getElementById('panel-content-active');
+            panel.classList.remove('hidden');
             
-            nodeUpdate.transition().duration(400)
-                .attr("transform", d => `translate(${d.y + 20},${d.x + 30})`);
+            const color = currentMode === 'technical' ? 'text-sky-400' : 'text-emerald-400';
+            const bgHover = currentMode === 'technical' ? 'bg-sky-500/10' : 'bg-emerald-500/10';
 
-            nodeUpdate.select("circle")
-                .style("fill", d => d._children ? (currentMode === 'technical' ? '#0369a1' : '#047857') : '#0f172a');
-
-            const nodeExit = nodeSelection.exit().transition().duration(400)
-                .attr("transform", d => `translate(${source.y},${source.x})`)
-                .remove();
-
-            // Store spatial memory references for transitions
-            nodes.forEach(d => {
-                d.x0 = d.x;
-                d.y0 = d.y;
-            });
-        }
-
-        function diagonalPath(s, d) {
-            return `M ${s.y + 20} ${s.x + 30}
-                    C ${(s.y + d.y) / 2 + 20} ${s.x + 30},
-                      ${(s.y + d.y) / 2 + 20} ${d.x + 30},
-                      ${d.y + 20} ${d.x + 30}`;
-        }
-
-        // Handle expansion transitions and detail injections
-        function handleNodeInteraction(event, d) {
-            if (d.children) {
-                d._children = d.children;
-                d.children = null;
-            } else if (d._children) {
-                d.children = d._children;
-                d._children = null;
-            }
-            updateGraphLayout(d);
-            populateDetailPanel(d.data);
-        }
-
-        function populateDetailPanel(data) {
-            const defaultPanel = document.getElementById('panel-content-default');
-            const activePanel = document.getElementById('panel-content-active');
-            
-            defaultPanel.classList.add('hidden');
-            activePanel.classList.remove('hidden');
-
-            const accentColor = currentMode === 'technical' ? 'text-sky-400' : 'text-emerald-400';
-            const borderAccent = currentMode === 'technical' ? 'border-sky-500/20 bg-sky-950/20' : 'border-emerald-500/20 bg-emerald-950/20';
-
-            let rawHtml = `
-                <div>
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500">${currentMode} Module Reference</span>
-                    <h2 class="text-2xl font-black ${accentColor} mt-1 tracking-tight">${data.name}</h2>
-                    <p class="text-sm text-slate-300 mt-2 leading-relaxed font-normal">${data.description}</p>
+            let html = `
+                <div class="border-b border-slate-800 pb-4">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500">${currentMode} Module</span>
+                    <h2 class="text-3xl font-black ${color} mt-1">${data.name}</h2>
+                    <p class="text-sm text-slate-300 mt-3 leading-relaxed">${data.description}</p>
                 </div>
             `;
 
-            if (data.math) {
-                rawHtml += `
-                    <div class="border ${borderAccent} p-4 rounded-xl space-y-2">
-                        <h4 class="text-xs uppercase font-bold tracking-wider text-slate-400">Core Engineering Foundations</h4>
-                        <div class="text-sm text-slate-200 overflow-x-auto py-1">${data.math}</div>
+            if(data.simpleExplanation) {
+                html += `
+                    <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            The Simple Intuition
+                        </h3>
+                        <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-line">${data.simpleExplanation}</p>
                     </div>
                 `;
             }
 
-            if (data.courses || data.youtube) {
-                rawHtml += `<div class="space-y-3">
-                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400">Curated Educational Resources</h3>`;
-                
-                if (data.courses) {
-                    data.courses.forEach(c => {
-                        rawHtml += `
-                            <a href="${c.link}" target="_blank" class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 rounded-full bg-amber-400"></div>
-                                    <span class="text-xs font-semibold text-slate-300 group-hover:text-slate-100">${c.name}</span>
-                                </div>
-                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded uppercase font-mono tracking-wider">University</span>
-                            </a>
-                        `;
-                    });
-                }
-                if (data.youtube) {
-                    data.youtube.forEach(y => {
-                        rawHtml += `
-                            <a href="${y.link}" target="_blank" class="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                                    <span class="text-xs font-semibold text-slate-300 group-hover:text-slate-100">${y.name}</span>
-                                </div>
-                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded uppercase font-mono tracking-wider">YouTube</span>
-                            </a>
-                        `;
-                    });
-                }
-                rawHtml += `</div>`;
-            }
-
-            if (data.projects) {
-                rawHtml += `<div class="space-y-3">
-                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400">Portfolio Building Project Blueprints</h3>`;
-                data.projects.forEach(p => {
-                    const tagColor = p.lang === 'C++' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-                    rawHtml += `
-                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-2">
-                            <div class="flex justify-between items-center">
-                                <h4 class="text-xs font-bold text-slate-200">${p.title}</h4>
-                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 border rounded ${tagColor}">${p.lang}</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-relaxed">${p.desc}</p>
+            if(data.sandboxType && data.sandboxType !== 'none') {
+                html += `
+                    <div class="border border-slate-700 rounded-xl overflow-hidden bg-slate-900 shadow-xl mt-4">
+                        <div class="bg-slate-800 py-2 px-4 border-b border-slate-700 flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase text-slate-300 tracking-wider">Interactive Sandbox</span>
+                            <span class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                            </span>
                         </div>
-                    `;
-                });
-                rawHtml += `</div>`;
+                        <div id="sandbox-container-div" class="w-full relative bg-slate-950" style="height: 350px;"></div>
+                        <div id="sandbox-controls" class="p-4 bg-slate-900 border-t border-slate-800 text-xs text-slate-300 space-y-3"></div>
+                    </div>
+                `;
             }
 
-            activePanel.innerHTML = rawHtml;
-
-            // Trigger MathJax re-render to format new equations
-            if (window.MathJax) {
-                MathJax.typesetPromise([activePanel]);
+            if(data.math) {
+                html += `
+                    <div class="mt-4 p-4 border-l-2 border-slate-600 bg-slate-900/30">
+                        <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-2 tracking-wider">Mathematical Foundation</h4>
+                        <div class="text-sm text-slate-300 overflow-x-auto">${data.math}</div>
+                    </div>
+                `;
             }
+
+            panel.innerHTML = html;
+            if(window.MathJax) MathJax.typesetPromise([panel]);
+
+            // Initialize sandboxes
+            if(data.sandboxType === 'quaternion') initQuaternionSandbox();
+            if(data.sandboxType === 'pid') initPIDSandbox();
+            if(data.sandboxType === 'astar') initAStarSandbox();
+            if(data.sandboxType === 'pointcloud') initPointCloudSandbox();
         }
+
+        // --- 4. SANDBOX ENGINES ---
+
+        function initQuaternionSandbox() {
+            const container = document.getElementById('sandbox-container-div');
+            const controls = document.getElementById('sandbox-controls');
+            
+            // UI
+            controls.innerHTML = `
+                <div class="flex gap-4 mb-2">
+                    <button id="btn-euler" class="flex-1 py-1.5 bg-slate-800 text-slate-300 rounded border border-slate-600">3-Step Euler</button>
+                    <button id="btn-quat" class="flex-1 py-1.5 bg-sky-600 text-white rounded font-bold">1-Step Skewer</button>
+                </div>
+                <div id="euler-controls" class="hidden space-y-2">
+                    <div class="flex justify-between"><span>Pitch (X)</span><input type="range" id="sl-pitch" min="-180" max="180" value="0" class="w-2/3"></div>
+                    <div class="flex justify-between"><span>Yaw (Y)</span><input type="range" id="sl-yaw" min="-180" max="180" value="0" class="w-2/3"></div>
+                    <div class="flex justify-between"><span>Roll (Z)</span><input type="range" id="sl-roll" min="-180" max="180" value="0" class="w-2/3"></div>
+                    <p class="text-[10px] text-amber-400/80 italic text-center mt-1">Try Pitching 90°, then Yaw vs Roll. They do the same thing!</p>
+                </div>
+                <div id="quat-controls" class="space-y-2">
+                    <div class="flex justify-between"><span>Skewer X</span><input type="range" id="sl-qx" min="-100" max="100" value="50" class="w-2/3"></div>
+                    <div class="flex justify-between"><span>Skewer Y</span><input type="range" id="sl-qy" min="-100" max="100" value="50" class="w-2/3"></div>
+                    <div class="flex justify-between"><span>Skewer Z</span><input type="range" id="sl-qz" min="-100" max="100" value="50" class="w-2/3"></div>
+                    <div class="flex justify-between pt-2 border-t border-slate-700"><span>Twist Angle</span><input type="range" id="sl-angle" min="0" max="360" value="0" class="w-2/3 accent-emerald-500"></div>
+                </div>
+            `;
+
+            // Setup Three.js
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(5, 4, 5);
+            camera.lookAt(0, 0, 0);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            // Build Drone Object
+            const droneGrp = new THREE.Group();
+            const bodyMat = new THREE.MeshPhongMaterial({ color: 0x334155 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.3, 1.5), bodyMat);
+            droneGrp.add(body);
+            
+            // Mark Front (Nose)
+            const nose = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.2), new THREE.MeshPhongMaterial({color: 0xef4444}));
+            nose.position.z = 0.8;
+            droneGrp.add(nose);
+
+            scene.add(droneGrp);
+            scene.add(new THREE.GridHelper(5, 10, 0x334155, 0x1e293b));
+
+            // Skewer Line Helper
+            const skewerMat = new THREE.LineBasicMaterial({ color: 0x10b981, linewidth: 3 });
+            const skewerGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-3,0,0), new THREE.Vector3(3,0,0)]);
+            const skewerLine = new THREE.Line(skewerGeo, skewerMat);
+            scene.add(skewerLine);
+
+            let mode = 'quat'; // 'euler' or 'quat'
+            document.getElementById('btn-euler').onclick = () => { mode = 'euler'; droneGrp.rotation.set(0,0,0); skewerLine.visible = false; document.getElementById('euler-controls').classList.remove('hidden'); document.getElementById('quat-controls').classList.add('hidden'); document.getElementById('btn-euler').className = "flex-1 py-1.5 bg-sky-600 text-white font-bold rounded"; document.getElementById('btn-quat').className = "flex-1 py-1.5 bg-slate-800 text-slate-300 rounded border border-slate-600"; }
+            document.getElementById('btn-quat').onclick = () => { mode = 'quat'; droneGrp.rotation.set(0,0,0); skewerLine.visible = true; document.getElementById('euler-controls').classList.add('hidden'); document.getElementById('quat-controls').classList.remove('hidden'); document.getElementById('btn-quat').className = "flex-1 py-1.5 bg-sky-600 text-white font-bold rounded"; document.getElementById('btn-euler').className = "flex-1 py-1.5 bg-slate-800 text-slate-300 rounded border border-slate-600"; }
+
+            function animate() {
+                currentAnimationId = requestAnimationFrame(animate);
+                
+                if(mode === 'euler') {
+                    const p = document.getElementById('sl-pitch').value * (Math.PI/180);
+                    const y = document.getElementById('sl-yaw').value * (Math.PI/180);
+                    const r = document.getElementById('sl-roll').value * (Math.PI/180);
+                    droneGrp.rotation.set(p, y, r, 'ZYX'); // Set order to show gimbal lock easily
+                } else {
+                    let vx = parseFloat(document.getElementById('sl-qx').value);
+                    let vy = parseFloat(document.getElementById('sl-qy').value);
+                    let vz = parseFloat(document.getElementById('sl-qz').value);
+                    if(vx===0 && vy===0 && vz===0) vx = 0.01; // prevent zero vector
+                    
+                    const axis = new THREE.Vector3(vx, vy, vz).normalize();
+                    const angle = document.getElementById('sl-angle').value * (Math.PI/180);
+                    
+                    // Update Skewer visual
+                    skewerGeo.setFromPoints([axis.clone().multiplyScalar(-3), axis.clone().multiplyScalar(3)]);
+                    
+                    // Apply Quaternion
+                    const q = new THREE.Quaternion();
+                    q.setFromAxisAngle(axis, angle);
+                    droneGrp.setRotationFromQuaternion(q);
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function initPIDSandbox() {
+            const container = document.getElementById('sandbox-container-div');
+            const controls = document.getElementById('sandbox-controls');
+            
+            controls.innerHTML = `
+                <div class="grid grid-cols-3 gap-4 mb-2">
+                    <div class="text-center"><span class="block mb-1 font-bold text-sky-400">P (Proportional)</span><input type="range" id="sl-kp" min="0" max="100" value="10" class="w-full"></div>
+                    <div class="text-center"><span class="block mb-1 font-bold text-emerald-400">I (Integral)</span><input type="range" id="sl-ki" min="0" max="20" value="0" class="w-full accent-emerald-500"></div>
+                    <div class="text-center"><span class="block mb-1 font-bold text-amber-400">D (Derivative)</span><input type="range" id="sl-kd" min="0" max="100" value="30" class="w-full accent-amber-500"></div>
+                </div>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-700">
+                    <div class="text-slate-400">Wind Force: <input type="range" id="sl-wind" min="-50" max="50" value="0" class="w-24 ml-2 align-middle accent-purple-500"></div>
+                    <button id="btn-reset-pid" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-white">Reset Drone</button>
+                </div>
+            `;
+
+            container.innerHTML = `<canvas id="pid-canvas" class="w-full h-full block"></canvas>`;
+            const canvas = document.getElementById('pid-canvas');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            const ctx = canvas.getContext('2d');
+
+            // Physics state
+            let droneY = canvas.height - 30;
+            let targetY = canvas.height / 2;
+            let velocityY = 0;
+            let mass = 1.0;
+            let gravity = 9.8;
+            
+            // PID state
+            let prevError = 0;
+            let integral = 0;
+            let dt = 0.05; // fixed time step
+
+            // History for graphing
+            const history = [];
+
+            document.getElementById('btn-reset-pid').onclick = () => {
+                droneY = canvas.height - 30;
+                velocityY = 0;
+                integral = 0;
+                prevError = 0;
+                history.length = 0;
+            };
+
+            function animate() {
+                currentAnimationId = requestAnimationFrame(animate);
+                
+                // Get sliders
+                const kp = document.getElementById('sl-kp').value * 0.1;
+                const ki = document.getElementById('sl-ki').value * 0.01;
+                const kd = document.getElementById('sl-kd').value * 0.1;
+                const wind = document.getElementById('sl-wind').value * 0.1;
+
+                // PID Math
+                const error = targetY - droneY;
+                integral += error * dt;
+                
+                // Anti-windup
+                if(integral > 1000) integral = 1000;
+                if(integral < -1000) integral = -1000;
+
+                const derivative = (error - prevError) / dt;
+                prevError = error;
+
+                // Calculate Control Force (Upwards thrust)
+                let thrust = (kp * error) + (ki * integral) + (kd * derivative);
+                
+                // Physics application
+                const netForce = thrust - (mass * gravity) + wind;
+                const acceleration = netForce / mass;
+                
+                velocityY += acceleration * dt;
+                
+                // Dampening (air resistance)
+                velocityY *= 0.95; 
+                droneY += velocityY * dt;
+
+                // Bounds
+                if(droneY > canvas.height) { droneY = canvas.height; velocityY = 0; }
+                if(droneY < 0) { droneY = 0; velocityY = 0; }
+
+                history.push(droneY);
+                if(history.length > canvas.width) history.shift();
+
+                // Draw
+                ctx.clearRect(0,0, canvas.width, canvas.height);
+                
+                // Draw Target Line
+                ctx.beginPath();
+                ctx.moveTo(0, targetY);
+                ctx.lineTo(canvas.width, targetY);
+                ctx.strokeStyle = '#ef4444';
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillText("Target Altitude", 10, targetY - 5);
+
+                // Draw History Graph
+                ctx.beginPath();
+                ctx.moveTo(0, history[0]);
+                for(let i=1; i<history.length; i++) {
+                    ctx.lineTo(i, history[i]);
+                }
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw Drone
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(canvas.width/2 - 20, droneY - 10, 40, 20);
+                
+                // Drone details
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(canvas.width/2 - 10, droneY - 10, 20, 20); // window
+                
+                // Thrust flame
+                if(thrust > 10) {
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width/2 - 10, droneY + 10);
+                    ctx.lineTo(canvas.width/2 + 10, droneY + 10);
+                    ctx.lineTo(canvas.width/2, droneY + 10 + (thrust/10));
+                    ctx.fill();
+                }
+            }
+            animate();
+        }
+
+        function initAStarSandbox() {
+            const container = document.getElementById('sandbox-container-div');
+            const controls = document.getElementById('sandbox-controls');
+            
+            controls.innerHTML = `
+                <div class="flex justify-between items-center h-full">
+                    <p class="text-[10px] text-slate-400">Drag mouse on grid to draw/erase walls.</p>
+                    <div class="flex gap-2">
+                        <button id="btn-clear-astar" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-white text-xs">Clear Walls</button>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = `<canvas id="astar-canvas" class="w-full h-full block cursor-crosshair"></canvas>`;
+            const canvas = document.getElementById('astar-canvas');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            const ctx = canvas.getContext('2d');
+
+            const cols = 25;
+            const rows = 15;
+            const cellW = canvas.width / cols;
+            const cellH = canvas.height / rows;
+
+            let grid = Array(cols).fill().map(() => Array(rows).fill(0));
+            const start = { x: 2, y: Math.floor(rows/2) };
+            const end = { x: cols - 3, y: Math.floor(rows/2) };
+
+            let isDrawing = false;
+            let drawMode = 1; // 1 to add wall, 0 to remove
+
+            function handleDraw(e) {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                const x = Math.floor(mx / cellW);
+                const y = Math.floor(my / cellH);
+                
+                if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                    if ((x !== start.x || y !== start.y) && (x !== end.x || y !== end.y)) {
+                        grid[x][y] = drawMode;
+                    }
+                }
+            }
+
+            canvas.addEventListener('mousedown', e => { 
+                isDrawing = true; 
+                // Determine if adding or removing based on what we clicked first
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / cellW);
+                const y = Math.floor((e.clientY - rect.top) / cellH);
+                if(x >= 0 && x < cols && y >= 0 && y < rows) {
+                    drawMode = grid[x][y] === 1 ? 0 : 1; 
+                }
+                handleDraw(e); 
+            });
+            canvas.addEventListener('mousemove', e => { if (isDrawing) handleDraw(e); });
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+            document.getElementById('btn-clear-astar').onclick = () => {
+                grid = Array(cols).fill().map(() => Array(rows).fill(0));
+            };
+
+            function heuristic(a, b) {
+                return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); // Manhattan distance
+            }
+
+            function solveAStar() {
+                let openSet = [{ x: start.x, y: start.y, g: 0, f: heuristic(start, end), parent: null }];
+                let closedSet = Array(cols).fill().map(() => Array(rows).fill(false));
+                let path = [];
+                let explored = [];
+
+                while (openSet.length > 0) {
+                    // Get node with lowest f
+                    let lowestIdx = 0;
+                    for (let i = 1; i < openSet.length; i++) {
+                        if (openSet[i].f < openSet[lowestIdx].f) lowestIdx = i;
+                    }
+                    let current = openSet.splice(lowestIdx, 1)[0];
+                    explored.push(current);
+
+                    if (current.x === end.x && current.y === end.y) {
+                        let temp = current;
+                        while (temp.parent) {
+                            path.push(temp);
+                            temp = temp.parent;
+                        }
+                        path.push(start);
+                        return { path: path.reverse(), explored: explored };
+                    }
+
+                    closedSet[current.x][current.y] = true;
+
+                    // Neighbors
+                    const neighbors = [ {x:0,y:-1}, {x:1,y:0}, {x:0,y:1}, {x:-1,y:0} ];
+                    for (let dir of neighbors) {
+                        let nx = current.x + dir.x;
+                        let ny = current.y + dir.y;
+
+                        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && grid[nx][ny] !== 1 && !closedSet[nx][ny]) {
+                            let tempG = current.g + 1;
+                            let existingNode = openSet.find(n => n.x === nx && n.y === ny);
+
+                            if (!existingNode) {
+                                openSet.push({ x: nx, y: ny, g: tempG, f: tempG + heuristic({x:nx, y:ny}, end), parent: current });
+                            } else if (tempG < existingNode.g) {
+                                existingNode.g = tempG;
+                                existingNode.f = tempG + heuristic({x:nx, y:ny}, end);
+                                existingNode.parent = current;
+                            }
+                        }
+                    }
+                }
+                return { path: [], explored: explored }; // No path
+            }
+
+            function animate() {
+                currentAnimationId = requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const result = solveAStar();
+
+                // Draw Explored Set (Water spreading effect)
+                ctx.fillStyle = 'rgba(14, 165, 233, 0.15)'; // Sky blue
+                for (let node of result.explored) {
+                    ctx.fillRect(node.x * cellW + 1, node.y * cellH + 1, cellW - 2, cellH - 2);
+                }
+
+                // Draw Path
+                if (result.path.length > 0) {
+                    ctx.strokeStyle = '#10b981'; // Emerald
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(start.x * cellW + cellW/2, start.y * cellH + cellH/2);
+                    for (let node of result.path) {
+                        ctx.lineTo(node.x * cellW + cellW/2, node.y * cellH + cellH/2);
+                    }
+                    ctx.stroke();
+                }
+
+                // Draw Grid & Walls
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        ctx.strokeStyle = '#1e293b';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(i * cellW, j * cellH, cellW, cellH);
+                        
+                        if (grid[i][j] === 1) {
+                            ctx.fillStyle = '#475569';
+                            ctx.fillRect(i * cellW, j * cellH, cellW, cellH);
+                        }
+                    }
+                }
+
+                // Draw Start/End Nodes
+                ctx.fillStyle = '#38bdf8'; // Start (Blue)
+                ctx.fillRect(start.x * cellW + 2, start.y * cellH + 2, cellW - 4, cellH - 4);
+                
+                ctx.fillStyle = '#ef4444'; // End (Red)
+                ctx.fillRect(end.x * cellW + 2, end.y * cellH + 2, cellW - 4, cellH - 4);
+            }
+            animate();
+        }
+
+        function initPointCloudSandbox() {
+            const container = document.getElementById('sandbox-container-div');
+            const controls = document.getElementById('sandbox-controls');
+            
+            controls.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 mb-2">
+                    <div class="text-center"><span class="block mb-1 font-bold text-emerald-400">Lidar Resolution (Rays)</span><input type="range" id="sl-rays" min="10" max="360" value="90" class="w-full accent-emerald-500"></div>
+                    <div class="text-center"><span class="block mb-1 font-bold text-amber-400">Sensor Noise</span><input type="range" id="sl-noise" min="0" max="20" value="5" class="w-full accent-amber-500"></div>
+                </div>
+                <p class="text-[10px] text-slate-400 text-center mt-2 border-t border-slate-700 pt-2">Move your mouse inside the sandbox to move the obstacle.</p>
+            `;
+
+            container.innerHTML = `<canvas id="lidar-canvas" class="w-full h-full block cursor-none"></canvas>`;
+            const canvas = document.getElementById('lidar-canvas');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            const ctx = canvas.getContext('2d');
+
+            const robot = { x: canvas.width/2, y: canvas.height/2 };
+            let mouseObs = { x: canvas.width/4, y: canvas.height/4, r: 30 };
+            
+            // Fixed room walls and boxes
+            const segments = [
+                // Room boundaries
+                {x1: 10, y1: 10, x2: canvas.width-10, y2: 10},
+                {x1: canvas.width-10, y1: 10, x2: canvas.width-10, y2: canvas.height-10},
+                {x1: canvas.width-10, y1: canvas.height-10, x2: 10, y2: canvas.height-10},
+                {x1: 10, y1: canvas.height-10, x2: 10, y2: 10},
+                // Box 1
+                {x1: canvas.width*0.7, y1: canvas.height*0.2, x2: canvas.width*0.8, y2: canvas.height*0.2},
+                {x1: canvas.width*0.8, y1: canvas.height*0.2, x2: canvas.width*0.8, y2: canvas.height*0.4},
+                {x1: canvas.width*0.8, y1: canvas.height*0.4, x2: canvas.width*0.7, y2: canvas.height*0.4},
+                {x1: canvas.width*0.7, y1: canvas.height*0.4, x2: canvas.width*0.7, y2: canvas.height*0.2},
+            ];
+
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mouseObs.x = e.clientX - rect.left;
+                mouseObs.y = e.clientY - rect.top;
+            });
+
+            // Line intersection math
+            function getIntersection(ray, segment) {
+                const r_px = ray.x, r_py = ray.y, r_dx = ray.dx, r_dy = ray.dy;
+                const s_px = segment.x1, s_py = segment.y1, s_dx = segment.x2 - segment.x1, s_dy = segment.y2 - segment.y1;
+
+                const cross = r_dx * s_dy - r_dy * s_dx;
+                if (Math.abs(cross) < 0.0001) return null; // Parallel
+
+                const t1 = ((s_px - r_px) * s_dy - (s_py - r_py) * s_dx) / cross;
+                const t2 = ((s_px - r_px) * r_dy - (s_py - r_py) * r_dx) / cross;
+
+                if (t1 > 0 && t2 >= 0 && t2 <= 1) {
+                    return { x: r_px + r_dx * t1, y: r_py + r_dy * t1, dist: t1 };
+                }
+                return null;
+            }
+
+            // Circle intersection math for the mouse obstacle
+            function getCircleIntersection(ray, circle) {
+                const fx = ray.x - circle.x;
+                const fy = ray.y - circle.y;
+                const a = ray.dx*ray.dx + ray.dy*ray.dy;
+                const b = 2 * (fx*ray.dx + fy*ray.dy);
+                const c = (fx*fx + fy*fy) - circle.r*circle.r;
+
+                let discriminant = b*b - 4*a*c;
+                if(discriminant < 0) return null;
+
+                discriminant = Math.sqrt(discriminant);
+                const t1 = (-b - discriminant) / (2*a);
+                const t2 = (-b + discriminant) / (2*a);
+
+                if(t1 >= 0) return { x: ray.x + ray.dx*t1, y: ray.y + ray.dy*t1, dist: t1 };
+                if(t2 >= 0) return { x: ray.x + ray.dx*t2, y: ray.y + ray.dy*t2, dist: t2 };
+                return null;
+            }
+
+            function animate() {
+                currentAnimationId = requestAnimationFrame(animate);
+                ctx.fillStyle = '#020617'; // Deep bg
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw physical objects faintly
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 2;
+                for(let seg of segments) {
+                    ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); ctx.stroke();
+                }
+                ctx.beginPath(); ctx.arc(mouseObs.x, mouseObs.y, mouseObs.r, 0, Math.PI*2); ctx.stroke();
+
+                // Lidar Raycast
+                const numRays = document.getElementById('sl-rays').value;
+                const noiseAmt = document.getElementById('sl-noise').value;
+                const step = (Math.PI * 2) / numRays;
+
+                const pointCloud = [];
+
+                for (let a = 0; a < Math.PI * 2; a += step) {
+                    const ray = { x: robot.x, y: robot.y, dx: Math.cos(a), dy: Math.sin(a) };
+                    let closest = null;
+                    let minDist = Infinity;
+
+                    // Check walls
+                    for (let seg of segments) {
+                        const hit = getIntersection(ray, seg);
+                        if (hit && hit.dist < minDist) { minDist = hit.dist; closest = hit; }
+                    }
+                    
+                    // Check mouse circle
+                    const hitCirc = getCircleIntersection(ray, mouseObs);
+                    if (hitCirc && hitCirc.dist < minDist) { minDist = hitCirc.dist; closest = hitCirc; }
+
+                    if (closest) {
+                        // Draw faint ray
+                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
+                        ctx.beginPath(); ctx.moveTo(robot.x, robot.y); ctx.lineTo(closest.x, closest.y); ctx.stroke();
+
+                        // Add noise to simulate real lidar inaccuracy
+                        const noiseX = (Math.random() - 0.5) * noiseAmt;
+                        const noiseY = (Math.random() - 0.5) * noiseAmt;
+                        pointCloud.push({ x: closest.x + noiseX, y: closest.y + noiseY });
+                    }
+                }
+
+                // Render Point Cloud (what the robot actually "sees")
+                ctx.fillStyle = '#10b981'; // Bright green dots
+                for(let pt of pointCloud) {
+                    ctx.fillRect(pt.x - 1.5, pt.y - 1.5, 3, 3);
+                }
+
+                // Draw Robot
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath(); ctx.arc(robot.x, robot.y, 8, 0, Math.PI*2); ctx.fill();
+                
+                // Draw spinning laser indicator
+                const spinAngle = Date.now() / 100 % (Math.PI * 2);
+                ctx.strokeStyle = '#ef4444';
+                ctx.beginPath(); ctx.moveTo(robot.x, robot.y); 
+                ctx.lineTo(robot.x + Math.cos(spinAngle)*15, robot.y + Math.sin(spinAngle)*15); ctx.stroke();
+            }
+            animate();
+        }
+
     </script>
 </body>
 </html>
